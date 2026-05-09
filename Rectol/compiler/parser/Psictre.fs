@@ -59,20 +59,6 @@ module ComputationExpressionForParser =
             match run p1 input with
             | Ok _ as res -> res
             | Error _ -> run p2 input
-
-    let (.>>) (p1: Parser<'a>) (p2: Parser<'b>): Parser<'c> =
-        parse {
-            let! res1, _ = p1
-            let! _ = p2
-            return res1
-        }
-
-    let (>>.) (p1: Parser<'a>) (p2: Parser<'b>): Parser<'c> =
-        parse {
-            let! _ = p1
-            let! res2, _ = p2
-            return res2
-        }
 #warnon 64
 
     let skip1: Parser<char> =
