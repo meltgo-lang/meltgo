@@ -25,10 +25,14 @@
     <None Include="compiler\ASTInserter.fs" />
     <None Include="compiler\TypeInference.fs" />
 	<Compile Include="compiler\lexer\Lexer.fs" />
+	<Compile Include="compiler\parser\type_research\TRAttributes.fs" />
+	<Compile Include="compiler\parser\type_research\TypeResearch.fs" />
 	<Compile Include="compiler\parser\Psictre.fs" />
     <Compile Include="compiler\SimpleScope.fs" />
     <Compile Include="compiler\Parser.fs" />
     <None Include="compiler\OldParser.fs" />
+    <Compile Include="Expr.fs" />
+    <Compile Include="Test.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -36,5 +40,10 @@
     <PackageReference Include="ClangSharp" Version="21.1.8.3" />
     <PackageReference Include="FParsec" Version="1.1.1" />
   </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+	</ItemGroup>
 
 </Project>

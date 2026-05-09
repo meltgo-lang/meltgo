@@ -22,10 +22,10 @@ module private ParserFunc =
 module ParserType =
     open ParserFunc
 
-    type TypeResearch() =
-        member __.Yield(x: TypeConstrait<'a>) = [x]
-        member __.Combine(a, b) = a @ b
-        member __.Delay(f) = f()
+    type TypeDecide() =
+        
+        member __.MergeSource(x, y) = x, y
+        member __.Return(x) = ()
 
     type ParserBuilder() =
         member __.Bind(p, f) = bind f p
@@ -39,7 +39,7 @@ module ComputationExpressionForParser =
     open System
 
     let parse = ParserBuilder()
-    let typeResearch = TypeResearch()
+    let typedec = TypeDecide()
 
     let attempt (p: Parser<'a>) =
         fun input ->
