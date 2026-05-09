@@ -25,7 +25,7 @@
     <None Include="compiler\ASTInserter.fs" />
     <None Include="compiler\TypeInference.fs" />
 	<Compile Include="compiler\lexer\Lexer.fs" />
-	<Compile Include="compiler\parser\type_research\TRAttributes.fs" />
+	<Compile Include="compiler\parser\type_research\TRModule.fs" />
 	<Compile Include="compiler\parser\type_research\TypeResearch.fs" />
 	<Compile Include="compiler\parser\Psictre.fs" />
     <Compile Include="compiler\SimpleScope.fs" />
