@@ -4,12 +4,14 @@ open System
 
 [<AutoOpen>]
 module TRModule =
-    type ITRConstrait =
-        abstract member Delegate: target: ITRConstrait -> ITRConstrait option
+    type ITRTypeConstrait =
+        abstract member Delegate: target: ITRTypeConstrait -> ITRTypeConstrait option
 
-    type ITRConstraitGetter<'a> =
+    type ITRTypeConstraitGetter<'a> =
         abstract member Get: unit -> 'a
 
     type ITRImpl =
-        abstract member Constraits: ITRConstrait list
-        abstract member GenFunc: target: ITRConstrait -> (ITRConstrait list -> ITRConstrait option)
+        abstract member Constraits: ITRTypeConstrait
+        abstract member Mapping: input: ITRTypeConstrait -> bool
+        abstract member GenerateFunc: target: ITRTypeConstrait -> (ITRTypeConstrait list -> ITRTypeConstrait option)
+

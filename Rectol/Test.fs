@@ -38,24 +38,69 @@ module Sample2 =
     open Psictre.TypeReserach
 
     type Symbol(t: string) =
-        interface ITRConstrait with
-            member __.Delegate (target: ITRConstrait): ITRConstrait option = 
+        interface ITRTypeConstrait with
+            member this.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
+                let t = (this :> ITRTypeConstraitGetter<string>).Get()
                 match target with
                 | :? Symbol as source ->
-                    if t = (source :> ITRConstraitGetter<string>).Get()
+                    if t = (source :> ITRTypeConstraitGetter<string>).Get()
                     then Some target
                     else None
                 | _ -> None
-
-        interface ITRConstraitGetter<string> with
+                
+        interface ITRTypeConstraitGetter<string> with
             member __.Get () = t
 
     type Undef(t: string) =
-        interface ITRConstrait with
-            member __.Delegate (target: ITRConstrait): ITRConstrait option = 
+        interface ITRTypeConstrait with
+            member __.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
                 Some target
 
-        interface ITRConstraitGetter<string> with
+        interface ITRTypeConstraitGetter<string> with
             member __.Get () = t
 
-    type Constrait(t: string, list: ITRConstrait list) = class end
+    type Constrait(t: string, list: ITRTypeConstrait list) =
+        interface ITRTypeConstrait with
+            member this.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
+                let _, list = (this :> ITRTypeConstraitGetter<string * ITRTypeConstrait list>).Get()
+                match target with
+                | :? Constrait as source ->
+                    let svalue, slist = (source :> ITRTypeConstraitGetter<string * ITRTypeConstrait list>).Get()
+                    list
+                    |> List.zip slist
+                    |> List.map (fun (x, y) -> y.Delegate x)
+                    |> List.filter (_.IsNone)
+                    |> function
+                        | [] -> Some target
+                        | _ -> None
+                | _ -> None
+
+        interface ITRTypeConstraitGetter<string * ITRTypeConstrait list> with
+            member __.Get (): string * ITRTypeConstrait list = 
+                t, list
+
+    type Generic(t: string, list: ITRTypeConstrait list) =
+        interface ITRTypeConstrait with
+            member this.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
+                let t, list = (this :> ITRTypeConstraitGetter<string * ITRTypeConstrait list>).Get()
+                match target with
+                | :? Generic as source ->
+                    let svalue, slist = (source :> ITRTypeConstraitGetter<string * ITRTypeConstrait list>).Get()
+                    list
+                    |> List.zip slist
+                    |> List.map (fun (x, y) -> y.Delegate x)
+                    |> List.filter (_.IsNone)
+                    |> function
+                        | [] when t = svalue -> Some target
+                        | _ -> None
+                | _ -> None
+
+        interface ITRTypeConstraitGetter<string * ITRTypeConstrait list> with
+            member __.Get (): string * ITRTypeConstrait list =
+                t, list
+
+    let run() =
+        let t1 = Generic("A", [Undef("T")])
+        let t2 = Generic("A", [Symbol("B")])
+        (t1 :> ITRTypeConstrait).Delegate t2
+
