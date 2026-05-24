@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="fop\Replenishment.fs" />
     <None Include="mr\README.md" />
     <Compile Include="mr\FreeLifetime.fs" />
     <Compile Include="mr\MR.fs" />
@@ -29,7 +28,6 @@
 	<Compile Include="compiler\parser\Psictre.fs" />
     <Compile Include="compiler\SimpleScope.fs" />
     <Compile Include="compiler\Parser.fs" />
-    <None Include="compiler\OldParser.fs" />
     <Compile Include="Expr.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Program.fs" />

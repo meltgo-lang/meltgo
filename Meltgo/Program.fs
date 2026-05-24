@@ -5,7 +5,6 @@
 
 open Psictre
 open Psictre.DirectedLambdaTypeInference
-open Meltgo.Lexer
 open Meltgo
 
 [<EntryPoint>]
