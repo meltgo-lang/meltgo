@@ -1,4 +1,4 @@
-namespace Rectol
+namespace Meltgo
 
 open System.IO
 

@@ -1,3 +1,0 @@
-namespace Rectol.MR
-
-

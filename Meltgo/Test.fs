@@ -33,11 +33,11 @@ module Sample1 =
         fun (values: A list) ->
             let result, _, _ = transform (Map.empty, values) inputA
             result
-
+(*
 module Sample2 =
     open Psictre.TypeReserach
 
-    type Symbol(t: string) =
+    type Symbol(t: string) = struct
         interface ITRTypeConstrait with
             member this.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
                 let t = (this :> ITRTypeConstraitGetter<string>).Get()
@@ -50,16 +50,18 @@ module Sample2 =
                 
         interface ITRTypeConstraitGetter<string> with
             member __.Get () = t
+    end
 
-    type Undef(t: string) =
+    type Undef(t: string) = struct
         interface ITRTypeConstrait with
             member __.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
                 Some target
 
         interface ITRTypeConstraitGetter<string> with
             member __.Get () = t
+    end
 
-    type Constrait(t: string, list: ITRTypeConstrait list) =
+    type Constrait(t: string, list: ITRTypeConstrait list) = struct
         interface ITRTypeConstrait with
             member this.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
                 let _, list = (this :> ITRTypeConstraitGetter<string * ITRTypeConstrait list>).Get()
@@ -78,8 +80,9 @@ module Sample2 =
         interface ITRTypeConstraitGetter<string * ITRTypeConstrait list> with
             member __.Get (): string * ITRTypeConstrait list = 
                 t, list
+    end
 
-    type Generic(t: string, list: ITRTypeConstrait list) =
+    type Generic(t: string, list: ITRTypeConstrait list) = struct
         interface ITRTypeConstrait with
             member this.Delegate (target: ITRTypeConstrait): ITRTypeConstrait option =
                 let t, list = (this :> ITRTypeConstraitGetter<string * ITRTypeConstrait list>).Get()
@@ -98,9 +101,11 @@ module Sample2 =
         interface ITRTypeConstraitGetter<string * ITRTypeConstrait list> with
             member __.Get (): string * ITRTypeConstrait list =
                 t, list
+    end
 
     let run() =
         let t1 = Generic("A", [Undef("T")])
-        let t2 = Generic("A", [Symbol("B")])
+        let t2 = Generic("A", [Symbol("C")])
         (t1 :> ITRTypeConstrait).Delegate t2
+*)
 
