@@ -1,19 +1,41 @@
-namespace Psictre.DirectedLambdaTypeInference
+namespace Psictre.MonadicLambdaHindleyMilnerTypeInference
 
 [<AutoOpen>]
-module PublicDLTI =
-    type PseudoPointer() =
-        let mutable map = [||]
+module PublicMLHM =
+    type I = interface end
+    type A =
+        | B
+        | C
+        interface I
 
-        member __.Add() =
+    type D =
+        | E
+
+    let f (i: I) =
+        match i with
+        | :? A as a -> ()
+            
+    type IMLHMUnion<'a> =
+        abstract Default: unit -> 'a
+
+    type PseudoPointer<'T when 'T :> IMLHMUnion<'T> and 'T: equality>() =
+        let mutable map = [||]
+        let mutable typs = [||]
+
+        member __.Add (d: 'T) =
             let id = map |> Array.length
-            map <- map |> Array.append [|
-                if map |> Array.isEmpty then 0u
-                else map |> Array.max |> (+) 1u
-            |]
+            map <- [|
+                if map |> Array.isEmpty then 0u, d
+                else (map |> Array.map fst |> Array.max |> (+) 1u), d
+            |] |> Array.append map
+            typs <- [|
+                None
+            |] |> Array.append typs
             id
 
-        member __.Unification(target: uint, value: uint) =
+        member __.Unification(targetId: int)(valueId: int) =
+            let target = map[targetId]
+            let value = map[valueId]
             map <-
                 map
                 |> Array.map (fun x ->
@@ -21,11 +43,23 @@ module PublicDLTI =
                     else x
                 )
 
+        member __.SetType(id: int)(t: string) =
+            typs[id] <- Some t
+
         member __.GetMap() = map
+        member __.GetResult() = typs
 
-    type BindVar<'a>(pp: PseudoPointer, f: BindVar<'a> -> 'b) =
-        let mutable id = pp.Add()
+    type IBindVarFunction = interface
+        abstract Mapping: unit -> obj
+    end
 
-        member val Type: string option = None with get, set
+#nowarn 64
+    type BindVar<'a, 'b when 'a :> IMLHMUnion<'a> and 'a: equality and 'b :> IBindVarFunction>(pp: PseudoPointer<'a>, d: 'a, f: 'b) =
+        let mutable id = pp.Add (d.Default())
 
-        member this.Execute = f
+        member private __.GetId() = id
+
+        member __.Execute = f :> IBindVarFunction
+        member __.SetType(t: string) = pp.SetType id t
+        member __.Unification<'a, 'b>(b: BindVar<'a, 'b>) = pp.Unification id (b.GetId())
+#warnon 64

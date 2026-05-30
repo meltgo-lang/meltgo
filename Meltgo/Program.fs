@@ -4,18 +4,35 @@
    Copyright (c) 2026 Meltgo Language *)
 
 open Psictre
-open Psictre.DirectedLambdaTypeInference
+open Psictre.MonadicLambdaHindleyMilnerTypeInference
 open Meltgo
+
+type DU =
+    | DNone
+    interface IMLHMUnion<DU> with
+        member __.Default (): DU = 
+            DNone
+
+type Func =
+    | DSingle of (BindVar<DU, Func> -> BindVar<DU, Func>)
+    | DDouble of (BindVar<DU, Func> -> BindVar<DU, Func> -> BindVar<DU, Func>)
+    interface IBindVarFunction with
+        member this.Mapping (): obj = 
+            match this with
+            | DSingle f -> box f
+            | DDouble f -> box f
 
 [<EntryPoint>]
 let main _ =
     let pp = PseudoPointer()
-    let b = BindVar(pp, fun x ->
-        x.Type <- Some "Obj"
-        x)
-    match b.Execute b with
-    | :? BindVar<obj> as b ->
-        printfn "%A" b.Type
-        printfn "%A" (pp.GetMap())
-    | _ -> ()
+    let rec b = BindVar(pp, DNone, DSingle(fun x ->
+        x.SetType "Obj"
+        let b2 = BindVar(pp, DNone, DDouble(fun x y ->
+            x.Unification y
+            x))
+        (b2.Execute.Mapping() |> unbox : (BindVar<DU, Func> -> BindVar<DU, Func> -> BindVar<DU, Func>)) b2 b))
+    
+    let res = (b.Execute.Mapping() |> unbox : (BindVar<DU, Func> -> BindVar<DU, Func>)) b
+    printfn "%A" (pp.GetMap())
+    printfn "%A" (pp.GetResult())
     0

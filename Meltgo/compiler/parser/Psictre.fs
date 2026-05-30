@@ -104,11 +104,10 @@ module ComputationExpressionForParser =
 
     let pdigit = satisfy1 Char.IsDigit
 
-    let pint32: Parser<int> =
-        parse {
-            let! digits, _ = many1 pdigit
-            return digits |> List.toArray |> String |> int
-        }
+    let pdigits = parse {
+        let! x, _ = many1 pdigit
+        return x
+    }
 
     let eof: Parser<unit> =
         fun input ->

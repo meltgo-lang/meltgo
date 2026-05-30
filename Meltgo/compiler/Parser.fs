@@ -1,4 +1,10 @@
-namespace Meltgo.Compiler
+namespace Meltgo.Compiler.Parser
 
-module private RectolParser =
-    ()
+open Psictre
+
+[<AutoOpen>]
+module PublicParser =
+    let pnumber = parse {
+        let! x, _ = pdigits
+        return x |> List.toArray |> string |> int
+    }
