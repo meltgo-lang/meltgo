@@ -14,10 +14,12 @@
     <Compile Include="mr\MR.fs" />
     <Compile Include="files\ReadFile.fs" />
 	<Compile Include="compiler\lexer\Lexer.fs" />
-	<Compile Include="compiler\parser\MLW\MobadicLambdaWalkingTypeInference.fs" />
-	<Compile Include="compiler\parser\Psictre.fs" />
+	<Compile Include="compiler\parser_lib\MLW\MonadicLambdaWalkingTypeInference.fs" />
+	<Compile Include="compiler\parser_lib\Psictre.fs" />
+	<Compile Include="compiler\parser\BaseParser.fs" />
+	<Compile Include="compiler\parser\Expr.fs" />
+	<Compile Include="compiler\parser\Defvar.fs" />
     <Compile Include="compiler\SimpleScope.fs" />
-    <Compile Include="compiler\Parser.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -119,6 +119,12 @@ module ComputationExpressionForParser =
             | Ok (res, rest) -> Ok (Some res, rest)
             | Error _ -> Ok (None, input)
 
+    let proc f (p: Parser<'a>) =
+        parse {
+            let! res = p
+            return f res
+        }
+
     let pdigit = satisfy1 System.Char.IsDigit
 
     let pdigits =

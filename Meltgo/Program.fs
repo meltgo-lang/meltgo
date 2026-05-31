@@ -39,6 +39,10 @@ let main _ =
     printfn "%A" (pp.GetMap())
     printfn "%A" (pp.GetResult())
 
-    run defvar "let mut a =" |> printfn "%A"
+    run (parse {
+        let! res, _ = defvar
+        let! _ = eof
+        return res
+    }) "let a = 1*2+3/4" |> printfn "%A"
 
     0
