@@ -1,7 +1,7 @@
 namespace Psictre.MonadicLambdaWalkingTypeInference
 
 [<AutoOpen>]
-module PublicMLHM =
+module PublicMLW =
     type IMLWUnion = interface end
 
     type PseudoPointer<'T when 'T :> IMLWUnion and 'T: equality>() =
@@ -33,19 +33,22 @@ module PublicMLHM =
             typs[id] <- Some t
 
         member __.GetMap() = map
+
         member __.GetResult() = typs
 
     type IBindVarFunction =
         abstract GetFunc: unit -> obj
 
 #nowarn 64
-    type BindVar<'a, 'b when 'a :> IMLWUnion and 'a: equality and 'b :> IBindVarFunction>(pp: PseudoPointer<'a>, d: 'a, f: 'b) =
-        let mutable id = pp.Add d
+    type TypeVar<'a, 'b when 'a :> IMLWUnion and 'a: equality and 'b :> IBindVarFunction>(pp: PseudoPointer<'a>, d: 'a, f: 'b) =
+        let id = pp.Add d
 
         member private __.GetId() = id
 
         member __.GetFunc<'T>() = f :> IBindVarFunction |> _.GetFunc() |> unbox : 'T
+
         member __.SetType(t: string) = pp.SetType id t
-        member __.Unification<'c, 'd when 'c :> IMLWUnion and 'c: equality and 'd :> IBindVarFunction>(b: BindVar<'c, 'd>) =
+
+        member __.Unification<'c, 'd when 'c :> IMLWUnion and 'c: equality and 'd :> IBindVarFunction>(b: TypeVar<'c, 'd>) =
             pp.Unification id (b.GetId())
 #warnon 64

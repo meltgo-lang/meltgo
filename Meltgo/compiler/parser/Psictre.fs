@@ -87,6 +87,18 @@ module ComputationExpressionForParser =
 
     let pstring (s: string) = satisfy ((=) s) s.Length
 
+    let toStr (f: 'a -> string) (p: Parser<'a list>) =
+        parse {
+            let! lst, _ = p
+            return if lst |> List.isEmpty then "" else lst |> List.map f |> List.reduce (+)
+        }
+
+    let charToStr (p: Parser<char>) =
+        parse {
+            let! c, _ = p
+            return c |> string
+        }
+
     let rec many (p: Parser<'a>): Parser<'a list> =
         (parse {
             let! x, _ = p
@@ -101,29 +113,38 @@ module ComputationExpressionForParser =
             return x :: xs
         }
 
+    let opt (p: Parser<'a>) =
+        fun input ->
+            match run p input with
+            | Ok (res, rest) -> Ok (Some res, rest)
+            | Error _ -> Ok (None, input)
+
     let pdigit = satisfy1 System.Char.IsDigit
 
-    let pdigits = parse {
-        let! x, _ = many1 pdigit
-        return x |> List.toArray |> string
-    }
+    let pdigits =
+        parse {
+            let! x, _ = many1 pdigit
+            return x |> List.map _.ToString() |> List.reduce (+)
+        }
 
-    let pletter = parse {
-        let! c, _ = skip1
-        let unicode = c |> int
-        if
-            (0x0041 <= unicode && unicode <= 0x007a)
-            || (0x3040 <= unicode && unicode <= 0x309f)
-            || (0x30a0 <= unicode && unicode <= 0x30ff)
-            || (0x4e00 <= unicode && unicode <= 0x9fff)
-        then return c
-        else return! fail
-    }
+    let pletter =
+        parse {
+            let! c, _ = skip1
+            let unicode = c |> int
+            if
+                (0x0041 <= unicode && unicode <= 0x007a)
+                || (0x3040 <= unicode && unicode <= 0x309f)
+                || (0x30a0 <= unicode && unicode <= 0x30ff)
+                || (0x4e00 <= unicode && unicode <= 0x9fff)
+            then return c
+            else return! fail
+        }
 
-    let pletters = parse {
-        let! x, _ = many1 pletter
-        return x |> List.map _.ToString() |> List.reduce (+)
-    }
+    let pletters =
+        parse {
+            let! x, _ = many1 pletter
+            return x |> List.map _.ToString() |> List.reduce (+)
+        }
 
     let eof: Parser<unit> =
         fun input ->

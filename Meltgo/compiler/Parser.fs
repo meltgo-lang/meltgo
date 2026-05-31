@@ -4,20 +4,39 @@ open Psictre
 
 [<AutoOpen>]
 module PublicParser =
+    let spaces = parse {
+        let! x, _ = many (pchar ' ') |> toStr string
+        return x
+    }
+
+    let spaces1 = parse {
+        let! x, _ = many1 (pchar ' ') |> toStr string
+        return x
+    }
+
     let pnumber = parse {
         let! x, _ = pdigits
         return x |> int
     }
 
     let pident = parse {
-        let! x, _ = pletter
-        let! y, _ = many (pletter <|> pdigit)
-        return x::y |> List.map _.ToString() |> List.reduce (+)
+        let! x, _ = pletter |> charToStr
+        let! y, _ = many (pletter <|> pdigit) |> toStr string
+        return x + y
     }
 
     let defvar = parse {
         let! _ = pstring "let"
-        let! _ = many1 (pchar ' ')
+        let mutable isMut = false
+        let! _ = spaces1
+        let! _ = opt (parse {
+            let! _ = pstring "mut"
+            isMut <- true
+            let! _ = spaces1
+            return 0
+        })
         let! vname, _ = pident
-        return vname
+        let! _ = spaces
+        let! _ = pchar '='
+        return vname, isMut
     }

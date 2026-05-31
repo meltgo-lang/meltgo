@@ -10,11 +10,12 @@ open Meltgo.Compiler.Parser
 
 type DU =
     | DNone
+    | DSome
     interface IMLWUnion
 
 type Func =
-    | FSingle of (BindVar<DU, Func> -> BindVar<DU, Func>)
-    | FDouble of (BindVar<DU, Func> -> BindVar<DU, Func> -> BindVar<DU, Func>)
+    | FSingle of (TypeVar<DU, Func> -> TypeVar<DU, Func>)
+    | FDouble of (TypeVar<DU, Func> -> TypeVar<DU, Func> -> TypeVar<DU, Func>)
     interface IBindVarFunction with
         member this.GetFunc () =
             match this with
@@ -24,20 +25,20 @@ type Func =
 [<EntryPoint>]
 let main _ =
     let pp = PseudoPointer()
-    let rec b = BindVar(pp, DNone, FSingle(fun x ->
+    let rec b = TypeVar(pp, DSome, FSingle(fun x ->
         x.SetType "Obj"
         x))
-    let b2 = BindVar(pp, DNone, FDouble(fun x y ->
+    let b2 = TypeVar(pp, DNone, FDouble(fun x y ->
         x.Unification y
         x
     ))
 
-    let res = b.GetFunc<BindVar<DU, Func> -> BindVar<DU, Func>>() b
-    let res2 = b2.GetFunc<BindVar<DU, Func> -> BindVar<DU, Func> -> BindVar<DU, Func>>() b2 res
+    let res = b.GetFunc<TypeVar<DU, Func> -> TypeVar<DU, Func>>() b
+    let res2 = b2.GetFunc<TypeVar<DU, Func> -> TypeVar<DU, Func> -> TypeVar<DU, Func>>() b2 res
     
     printfn "%A" (pp.GetMap())
     printfn "%A" (pp.GetResult())
 
-    run defvar "let aあ" |> printfn "%A"
+    run defvar "let mut a =" |> printfn "%A"
 
     0
