@@ -20,6 +20,6 @@ module DefvarParser =
             let! _ = pchar '='
             let! _ = spaces
             let! expr, _ = addsub <|> block
-            return vname, isMut, expr
+            return Defvar(vname, isMut, expr)
         }
     

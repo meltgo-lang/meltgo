@@ -43,6 +43,6 @@ let main _ =
         let! res, _ = defvar
         let! _ = eof
         return res
-    }) "let a = 1*2+3/4" |> printfn "%A"
+    }) "let mut a = 1*2+3/4" |> printfn "%A"
 
     0

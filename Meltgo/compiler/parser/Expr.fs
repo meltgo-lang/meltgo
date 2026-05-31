@@ -36,7 +36,7 @@ module ExprParser =
             let! l1, _ = muldiv <|> penum
             let! lst, _ = many1 (parse {
                 let! _ = spaces
-                let! op, rest = pchar '+' <|> pchar '-'
+                let! op, _ = pchar '+' <|> pchar '-'
                 let! _ = spaces
                 let! l2, _ = muldiv <|> penum
                 return op, l2
