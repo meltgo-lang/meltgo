@@ -12,7 +12,7 @@ module ParserBase =
         | Mul of Expr * Expr
         | Div of Expr * Expr
 
-    let program: Parser<Expr> ref = parse { return Nan } |> ref
+    let block, blockRef = refParser<Expr>()
 
     let spaces = parse {
         let! x, _ = many (pchar ' ') |> toStr string

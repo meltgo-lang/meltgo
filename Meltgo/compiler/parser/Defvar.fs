@@ -19,7 +19,7 @@ module DefvarParser =
             let! _ = spaces
             let! _ = pchar '='
             let! _ = spaces
-            let! expr, _ = addsub <|> program.Value
+            let! expr, _ = addsub <|> block
             return vname, isMut, expr
         }
     

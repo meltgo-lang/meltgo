@@ -51,6 +51,15 @@ module ComputationExpressionForParser =
                     return! fail
                 }
 
+    let refParser<'a>() =
+        let refp: Parser<'a> ref = parse {} |> ref
+        let p =
+            parse {
+                let! res, _ = refp.Value
+                return res
+            }
+        p, refp
+
 #nowarn 64
     let (<|>) (p1: Parser<'a>) (p2: Parser<'b>): Parser<'c> =
         fun input ->
