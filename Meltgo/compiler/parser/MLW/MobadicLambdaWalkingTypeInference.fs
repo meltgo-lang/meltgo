@@ -1,24 +1,10 @@
-namespace Psictre.MonadicLambdaHindleyMilnerTypeInference
+namespace Psictre.MonadicLambdaWalkingTypeInference
 
 [<AutoOpen>]
 module PublicMLHM =
-    type I = interface end
-    type A =
-        | B
-        | C
-        interface I
+    type IMLWUnion = interface end
 
-    type D =
-        | E
-
-    let f (i: I) =
-        match i with
-        | :? A as a -> ()
-            
-    type IMLHMUnion<'a> =
-        abstract Default: unit -> 'a
-
-    type PseudoPointer<'T when 'T :> IMLHMUnion<'T> and 'T: equality>() =
+    type PseudoPointer<'T when 'T :> IMLWUnion and 'T: equality>() =
         let mutable map = [||]
         let mutable typs = [||]
 
@@ -49,17 +35,17 @@ module PublicMLHM =
         member __.GetMap() = map
         member __.GetResult() = typs
 
-    type IBindVarFunction = interface
-        abstract Mapping: unit -> obj
-    end
+    type IBindVarFunction =
+        abstract GetFunc: unit -> obj
 
 #nowarn 64
-    type BindVar<'a, 'b when 'a :> IMLHMUnion<'a> and 'a: equality and 'b :> IBindVarFunction>(pp: PseudoPointer<'a>, d: 'a, f: 'b) =
-        let mutable id = pp.Add (d.Default())
+    type BindVar<'a, 'b when 'a :> IMLWUnion and 'a: equality and 'b :> IBindVarFunction>(pp: PseudoPointer<'a>, d: 'a, f: 'b) =
+        let mutable id = pp.Add d
 
         member private __.GetId() = id
 
-        member __.Execute = f :> IBindVarFunction
+        member __.GetFunc<'T>() = f :> IBindVarFunction |> _.GetFunc() |> unbox : 'T
         member __.SetType(t: string) = pp.SetType id t
-        member __.Unification<'a, 'b>(b: BindVar<'a, 'b>) = pp.Unification id (b.GetId())
+        member __.Unification<'c, 'd when 'c :> IMLWUnion and 'c: equality and 'd :> IBindVarFunction>(b: BindVar<'c, 'd>) =
+            pp.Unification id (b.GetId())
 #warnon 64

@@ -11,8 +11,6 @@
 
   <ItemGroup>
     <None Include="CODEX_JP.md" />
-    <None Include="docs\fop.md" />
-	<None Include="compiler\GUIDE.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,11 +22,10 @@
     <None Include="compiler\ASTInserter.fs" />
     <None Include="compiler\TypeInference.fs" />
 	<Compile Include="compiler\lexer\Lexer.fs" />
-	<Compile Include="compiler\parser\DLTI\DirectedLambdaTypeInference.fs" />
+	<Compile Include="compiler\parser\MLW\MobadicLambdaWalkingTypeInference.fs" />
 	<Compile Include="compiler\parser\Psictre.fs" />
     <Compile Include="compiler\SimpleScope.fs" />
     <Compile Include="compiler\Parser.fs" />
-    <Compile Include="Expr.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

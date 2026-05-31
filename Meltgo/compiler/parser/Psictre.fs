@@ -36,7 +36,6 @@ module ParserType =
 [<AutoOpen>]
 module ComputationExpressionForParser =
     open ParserFunc
-    open System
 
     let parse = ParserBuilder()
 
@@ -102,11 +101,28 @@ module ComputationExpressionForParser =
             return x :: xs
         }
 
-    let pdigit = satisfy1 Char.IsDigit
+    let pdigit = satisfy1 System.Char.IsDigit
 
     let pdigits = parse {
         let! x, _ = many1 pdigit
-        return x
+        return x |> List.toArray |> string
+    }
+
+    let pletter = parse {
+        let! c, _ = skip1
+        let unicode = c |> int
+        if
+            (0x0041 <= unicode && unicode <= 0x007a)
+            || (0x3040 <= unicode && unicode <= 0x309f)
+            || (0x30a0 <= unicode && unicode <= 0x30ff)
+            || (0x4e00 <= unicode && unicode <= 0x9fff)
+        then return c
+        else return! fail
+    }
+
+    let pletters = parse {
+        let! x, _ = many1 pletter
+        return x |> List.map _.ToString() |> List.reduce (+)
     }
 
     let eof: Parser<unit> =
