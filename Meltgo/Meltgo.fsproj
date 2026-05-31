@@ -10,17 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="CODEX_JP.md" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="mr\README.md" />
     <Compile Include="mr\FreeLifetime.fs" />
     <Compile Include="mr\MR.fs" />
     <Compile Include="files\ReadFile.fs" />
-    <None Include="compiler\FlatAST.fs" />
-    <None Include="compiler\ASTInserter.fs" />
-    <None Include="compiler\TypeInference.fs" />
 	<Compile Include="compiler\lexer\Lexer.fs" />
 	<Compile Include="compiler\parser\MLW\MobadicLambdaWalkingTypeInference.fs" />
 	<Compile Include="compiler\parser\Psictre.fs" />
@@ -29,15 +21,10 @@
     <Compile Include="Test.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
+	
   <ItemGroup>
-    <PackageReference Include="ClangSharp" Version="21.1.8.3" />
-    <PackageReference Include="FParsec" Version="1.1.1" />
+	<None Include="mlir\*\*" />
+	<None Include="mlir\*" />
   </ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
-	</ItemGroup>
 
 </Project>
