@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 pub struct PseudoPointer<T>
 where
@@ -21,7 +21,7 @@ where
 
     pub fn add(&mut self, d: Vec<T>) -> usize {
         let id = self.map.len();
-        self.map.push((id + 1, d));
+        self.map.push((id, d));
         self.typs.push(None);
         id
     }
@@ -29,7 +29,6 @@ where
     pub fn add_sub(&mut self, id: usize, ad: Vec<T>) {
         let (_, d) = &mut self.map[id];
         d.extend(ad);
-        //self.map[id] = (*p_id, *d);
     }
 
     pub fn unification(&mut self, target_id: usize, value_id: usize) {
@@ -61,19 +60,19 @@ where
     }
 }
 
-pub struct MLWGrammarLeaf<'a, T, Arg, Result>
+pub struct MLWGrammarLeaf<'a, T1, T2>
 where
-    T: PartialEq + Clone,
+    T1: PartialEq + Clone,
 {
-    pub type_var: MLWTypeVar<T>,
-    pub function: MLWFunction<'a, Arg, Result>,
+    pub type_var: MLWTypeVar<T1>,
+    pub function: MLWFunction<'a, T1, T2>,
 }
 
-impl<'a, T, Arg, Result> MLWGrammarLeaf<'a, T, Arg, Result>
+impl<'a, T1, T2> MLWGrammarLeaf<'a, T1, T2>
 where
-    T: PartialEq + Clone,
+    T1: PartialEq + Clone,
 {
-    pub fn new(t: MLWTypeVar<T>, f: MLWFunction<'a, Arg, Result>) -> Self {
+    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<'a, T1, T2>) -> Self {
         Self {
             type_var: t,
             function: f,
@@ -125,16 +124,27 @@ where
     }
 }
 
-pub struct MLWFunction<'a, Arg, Result> {
-    f: &'a dyn Fn(Arg) -> Result,
+pub struct MLWFunction<'a, T1, T2>
+where
+    T1: PartialEq + Clone,
+{
+    pp: Arc<Mutex<PseudoPointer<T1>>>,
+    f: &'a dyn Fn(MutexGuard<PseudoPointer<T1>>, T2) -> T2,
 }
 
-impl<'a, Arg, Result> MLWFunction<'a, Arg, Result> {
-    pub fn new(f: &'a dyn Fn(Arg) -> Result) -> Self {
-        Self { f: f }
+impl<'a, T1, T2> MLWFunction<'a, T1, T2>
+where
+    T1: PartialEq + Clone,
+{
+    pub fn new(
+        pp: Arc<Mutex<PseudoPointer<T1>>>,
+        f: &'a dyn Fn(MutexGuard<PseudoPointer<T1>>, T2) -> T2,
+    ) -> Self {
+        Self { pp: pp, f: f }
     }
 
-    pub fn execute_function(&self, arg: Arg) -> Result {
-        (self.f)(arg)
+    pub fn execute_function(&self, arg: T2) -> T2 {
+        let pp = self.pp.lock().unwrap();
+        (self.f)(pp, arg)
     }
 }
