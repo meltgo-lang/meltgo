@@ -27,8 +27,21 @@ where
     }
 
     pub fn add_sub(&mut self, id: usize, ad: Vec<T>) {
-        let (_, d) = &mut self.map[id];
-        d.extend(ad);
+        let id = self.map[id].0;
+        self.map = self
+            .map
+            .iter_mut()
+            .map(|x| {
+                if (*x).0 == id {
+                    let (_, d) = &mut *x;
+                    d.extend(ad.clone());
+                    x
+                } else {
+                    x
+                }
+                .clone()
+            })
+            .collect();
     }
 
     pub fn unification(&mut self, target_id: usize, value_id: usize) {
@@ -38,7 +51,7 @@ where
             .map
             .iter()
             .map(|x| {
-                if *x == *target {
+                if (*x).0 == (*target).0 {
                     value.clone()
                 } else {
                     x.clone()
@@ -48,6 +61,7 @@ where
     }
 
     pub fn set_type(&mut self, id: usize, t: String) {
+        let id = self.map[id].0;
         self.typs[id] = Some(t);
     }
 
@@ -65,14 +79,14 @@ where
     T1: PartialEq + Clone,
 {
     pub type_var: MLWTypeVar<T1>,
-    pub function: MLWFunction<'a, T1, T2>,
+    pub function: MLWFunction<'a, T2>,
 }
 
 impl<'a, T1, T2> MLWGrammarLeaf<'a, T1, T2>
 where
     T1: PartialEq + Clone,
 {
-    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<'a, T1, T2>) -> Self {
+    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<'a, T2>) -> Self {
         Self {
             type_var: t,
             function: f,
@@ -124,27 +138,16 @@ where
     }
 }
 
-pub struct MLWFunction<'a, T1, T2>
-where
-    T1: PartialEq + Clone,
-{
-    pp: Arc<Mutex<PseudoPointer<T1>>>,
-    f: &'a dyn Fn(MutexGuard<PseudoPointer<T1>>, T2) -> T2,
+pub struct MLWFunction<'a, T> {
+    f: &'a dyn Fn(T) -> T,
 }
 
-impl<'a, T1, T2> MLWFunction<'a, T1, T2>
-where
-    T1: PartialEq + Clone,
-{
-    pub fn new(
-        pp: Arc<Mutex<PseudoPointer<T1>>>,
-        f: &'a dyn Fn(MutexGuard<PseudoPointer<T1>>, T2) -> T2,
-    ) -> Self {
-        Self { pp: pp, f: f }
+impl<'a, T> MLWFunction<'a, T> {
+    pub fn new(f: &'a dyn Fn(T) -> T) -> Self {
+        Self { f: f }
     }
 
-    pub fn execute_function(&self, arg: T2) -> T2 {
-        let pp = self.pp.lock().unwrap();
-        (self.f)(pp, arg)
+    pub fn execute_function(&self, arg: T) -> T {
+        (self.f)(arg)
     }
 }
