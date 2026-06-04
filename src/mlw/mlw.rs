@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::{Arc, Mutex};
 
 pub struct PseudoPointer<T>
 where
@@ -45,19 +45,12 @@ where
     }
 
     pub fn unification(&mut self, target_id: usize, value_id: usize) {
-        let target = &self.map[target_id];
-        let value = &self.map[value_id];
-        self.map = self
-            .map
-            .iter()
-            .map(|x| {
-                if (*x).0 == (*target).0 {
-                    value.clone()
-                } else {
-                    x.clone()
-                }
-            })
-            .collect();
+        let target = self.map[target_id].0;
+        for i in 0..self.map.len() {
+            if self.map[i].0 == target {
+                self.map[i] = self.map[value_id].clone();
+            }
+        }
     }
 
     pub fn set_type(&mut self, id: usize, t: String) {
@@ -72,21 +65,25 @@ where
     pub fn get_result(&self) -> &Vec<Option<String>> {
         &self.typs
     }
+
+    pub fn get_result_from_id(&self, id: usize) -> &Option<String> {
+        &self.typs[id]
+    }
 }
 
-pub struct MLWGrammarLeaf<'a, T1, T2>
+pub struct MLWGrammarLeaf<T1, T2>
 where
     T1: PartialEq + Clone,
 {
     pub type_var: MLWTypeVar<T1>,
-    pub function: MLWFunction<'a, T2>,
+    pub function: MLWFunction<T2>,
 }
 
-impl<'a, T1, T2> MLWGrammarLeaf<'a, T1, T2>
+impl<T1, T2> MLWGrammarLeaf<T1, T2>
 where
     T1: PartialEq + Clone,
 {
-    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<'a, T2>) -> Self {
+    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<T2>) -> Self {
         Self {
             type_var: t,
             function: f,
@@ -98,7 +95,7 @@ pub struct MLWTypeVar<T>
 where
     T: PartialEq + Clone,
 {
-    pp: Arc<Mutex<PseudoPointer<T>>>,
+    pub pp: Arc<Mutex<PseudoPointer<T>>>,
     id: usize,
 }
 
@@ -115,7 +112,7 @@ where
         Self { pp: pp, id: id }
     }
 
-    fn get_id(&self) -> usize {
+    pub fn get_id(&self) -> usize {
         self.id
     }
 
@@ -138,12 +135,12 @@ where
     }
 }
 
-pub struct MLWFunction<'a, T> {
-    f: &'a dyn Fn(T) -> T,
+pub struct MLWFunction<T> {
+    f: Box<dyn Fn(T) -> T>,
 }
 
-impl<'a, T> MLWFunction<'a, T> {
-    pub fn new(f: &'a dyn Fn(T) -> T) -> Self {
+impl<T> MLWFunction<T> {
+    pub fn new(f: Box<dyn Fn(T) -> T>) -> Self {
         Self { f: f }
     }
 
