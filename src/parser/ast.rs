@@ -1,8 +1,11 @@
 use std::sync::{Arc, Mutex};
 
-use crate::mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
+use crate::{
+    mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer},
+    parser::ast::Ownership::Borrow,
+};
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Hash, Eq)]
 pub enum Ownership {
     Borrow(usize),
 }
@@ -19,7 +22,7 @@ impl Ref {
 }
 
 #[derive(Debug)]
-pub enum MeltgoNode<'a> {
+pub enum Node<'a> {
     Number {
         value: i32,
     },
@@ -34,7 +37,7 @@ pub enum MeltgoNode<'a> {
     },
 }
 
-pub enum MeltgoFunction {
+pub enum Function {
     FSingle(Box<dyn Fn(Arc<Mutex<PseudoPointer<Ownership>>>) -> MLWTypeVar<Ownership>>),
     FDouble(
         Box<
@@ -45,12 +48,12 @@ pub enum MeltgoFunction {
     ),
 }
 
-pub struct MeltgoNodeBuf<'a> {
+pub struct NodeBuf<'a> {
     pp: Arc<Mutex<PseudoPointer<Ownership>>>,
-    pub buf: Vec<MeltgoNode<'a>>,
+    pub buf: Vec<Node<'a>>,
 }
 
-impl<'a> MeltgoNodeBuf<'a> {
+impl<'a> NodeBuf<'a> {
     pub fn new(pp: Arc<Mutex<PseudoPointer<Ownership>>>) -> Self {
         Self {
             pp: pp,
@@ -58,15 +61,15 @@ impl<'a> MeltgoNodeBuf<'a> {
         }
     }
 
-    pub fn push(&mut self, node: MeltgoNode<'a>) -> usize {
+    pub fn push(&mut self, node: Node<'a>) -> usize {
         let size = self.buf.len();
         self.buf.push(node);
         size
     }
 
-    pub fn get_function(&self, id: usize) -> MeltgoFunction {
+    pub fn get_function(&self, id: usize) -> Function {
         match &self.buf[id] {
-            MeltgoNode::Number { value: _ } => MeltgoFunction::FSingle(Box::new(|pp| {
+            Node::Number { value: _ } => Function::FSingle(Box::new(|pp| {
                 let gl = MLWGrammarLeaf::new(
                     MLWTypeVar::new(Arc::clone(&pp), vec![]),
                     MLWFunction::<MLWTypeVar<Ownership>>::new(Box::new(|x| {
@@ -76,10 +79,10 @@ impl<'a> MeltgoNodeBuf<'a> {
                 );
                 gl.function.execute_function(gl.type_var)
             })),
-            MeltgoNode::AddOp { l, r } => {
+            Node::AddOp { l, r } => {
                 let fl = self.get_function(l.ptr);
                 let fr = self.get_function(r.ptr);
-                MeltgoFunction::FDouble(Box::new(move |pp| {
+                Function::FDouble(Box::new(move |pp| {
                     let shared_pp = Arc::clone(&pp);
                     let gl = MLWGrammarLeaf::new(
                         MLWTypeVar::new(Arc::clone(&pp), vec![]),
@@ -104,28 +107,29 @@ impl<'a> MeltgoNodeBuf<'a> {
                     );
                     gl.function.execute_function((
                         match &fl {
-                            MeltgoFunction::FSingle(f) => f(Arc::clone(&pp)),
-                            MeltgoFunction::FDouble(f) => f(Arc::clone(&pp)).0,
+                            Function::FSingle(f) => f(Arc::clone(&pp)),
+                            Function::FDouble(f) => f(Arc::clone(&pp)).0,
                         },
                         match &fr {
-                            MeltgoFunction::FSingle(f) => f(Arc::clone(&pp)),
-                            MeltgoFunction::FDouble(f) => f(Arc::clone(&pp)).0,
+                            Function::FSingle(f) => f(Arc::clone(&pp)),
+                            Function::FDouble(f) => f(Arc::clone(&pp)).0,
                         },
                     ))
                 }))
             }
-            MeltgoNode::Let {
+            Node::Let {
                 vname: _,
                 is_mut: _,
                 expr,
             } => {
                 let f = self.get_function(expr.ptr);
-                MeltgoFunction::FDouble(Box::new(move |pp| {
+                Function::FDouble(Box::new(move |pp| {
                     let gl = MLWGrammarLeaf::new(
                         MLWTypeVar::new(Arc::clone(&pp), vec![]),
                         MLWFunction::<(MLWTypeVar<Ownership>, MLWTypeVar<Ownership>)>::new(
                             Box::new(|(x, y)| {
-                                x.unification(&y);
+                                x.unify_sub(Borrow(x.get_id()), Borrow(y.get_id()));
+                                x.unify(&y);
                                 (x, y)
                             }),
                         ),
@@ -133,8 +137,8 @@ impl<'a> MeltgoNodeBuf<'a> {
                     gl.function.execute_function((
                         gl.type_var,
                         match &f {
-                            MeltgoFunction::FSingle(f) => f(Arc::clone(&pp)),
-                            MeltgoFunction::FDouble(f) => f(Arc::clone(&pp)).0,
+                            Function::FSingle(f) => f(Arc::clone(&pp)),
+                            Function::FDouble(f) => f(Arc::clone(&pp)).0,
                         },
                     ))
                 }))

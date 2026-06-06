@@ -1,8 +1,10 @@
+use std::collections::HashSet;
+use std::hash::Hash;
 use std::sync::{Arc, Mutex};
 
 pub struct PseudoPointer<T>
 where
-    T: PartialEq + Clone,
+    T: PartialEq + Clone + Hash + Eq,
 {
     map: Vec<(usize, Vec<T>)>,
     typs: Vec<Option<String>>,
@@ -10,7 +12,7 @@ where
 
 impl<T> PseudoPointer<T>
 where
-    T: PartialEq + Clone,
+    T: PartialEq + Clone + Hash + Eq,
 {
     pub fn new() -> Self {
         Self {
@@ -35,6 +37,8 @@ where
                 if (*x).0 == id {
                     let (_, d) = &mut *x;
                     d.extend(ad.clone());
+                    let hash: HashSet<_> = d.drain(..).collect();
+                    *d = hash.into_iter().collect::<Vec<T>>();
                     x
                 } else {
                     x
@@ -44,11 +48,24 @@ where
             .collect();
     }
 
-    pub fn unification(&mut self, target_id: usize, value_id: usize) {
+    pub fn unify(&mut self, target_id: usize, value_id: usize) {
         let target = self.map[target_id].0;
         for i in 0..self.map.len() {
             if self.map[i].0 == target {
                 self.map[i] = self.map[value_id].clone();
+            }
+        }
+    }
+
+    pub fn unify_sub(&mut self, target: T, value: T) {
+        for i in 0..self.map.len() {
+            if self.map[i].1.contains(&target) {
+                let vec = &mut self.map[i].1;
+                for j in 0..vec.len() {
+                    if vec[j] == target {
+                        vec[j] = value.clone();
+                    }
+                }
             }
         }
     }
@@ -73,7 +90,7 @@ where
 
 pub struct MLWGrammarLeaf<T1, T2>
 where
-    T1: PartialEq + Clone,
+    T1: PartialEq + Clone + Hash + Eq,
 {
     pub type_var: MLWTypeVar<T1>,
     pub function: MLWFunction<T2>,
@@ -81,7 +98,7 @@ where
 
 impl<T1, T2> MLWGrammarLeaf<T1, T2>
 where
-    T1: PartialEq + Clone,
+    T1: PartialEq + Clone + Hash + Eq,
 {
     pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<T2>) -> Self {
         Self {
@@ -93,7 +110,7 @@ where
 
 pub struct MLWTypeVar<T>
 where
-    T: PartialEq + Clone,
+    T: PartialEq + Clone + Hash + Eq,
 {
     pub pp: Arc<Mutex<PseudoPointer<T>>>,
     id: usize,
@@ -101,7 +118,7 @@ where
 
 impl<T> MLWTypeVar<T>
 where
-    T: PartialEq + Clone,
+    T: PartialEq + Clone + Hash + Eq,
 {
     pub fn new(pp: Arc<Mutex<PseudoPointer<T>>>, d: Vec<T>) -> Self {
         let id: usize;
@@ -126,12 +143,16 @@ where
         pp.set_type(self.id, t);
     }
 
-    pub fn unification<T2>(&self, tv: &MLWTypeVar<T2>)
+    pub fn unify<T2>(&self, tv: &MLWTypeVar<T2>)
     where
-        T2: PartialEq + Clone,
+        T2: PartialEq + Clone + Hash + Eq,
     {
         let mut pp = self.pp.lock().unwrap();
-        pp.unification(self.id, tv.get_id());
+        pp.unify(self.id, tv.get_id());
+    }
+    pub fn unify_sub(&self, t1: T, t2: T) {
+        let mut pp = self.pp.lock().unwrap();
+        pp.unify_sub(t1, t2);
     }
 }
 

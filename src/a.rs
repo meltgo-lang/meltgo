@@ -1,17 +1,12 @@
-mod meltgo_error;
 mod mlw;
 mod parser;
 
 use std::sync::{Arc, Mutex};
 
 use mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
-
-use parser::ast::{Function, NodeBuf};
 use parser::parser::defvar;
 
-use meltgo_error::emitter;
-
-use crate::meltgo_error::emitter::*;
+use parser::ast::{MeltgoFunction, MeltgoNodeBuf};
 
 #[derive(Clone, PartialEq, Debug, Hash, Eq)]
 enum DU {
@@ -22,15 +17,15 @@ enum DU {
 fn f() -> Result<(), Box<dyn std::error::Error>> {
     let pp = Arc::new(Mutex::new(PseudoPointer::new()));
     let shared_pp = Arc::clone(&pp);
-    let mut buf = NodeBuf::new(shared_pp);
+    let mut buf = MeltgoNodeBuf::new(shared_pp);
     let (_, index) = defvar("let mut b = 0 + 1", &mut buf)?;
     println!("{}, {:?}", index, buf.buf);
     let f = buf.get_function(index);
     match f {
-        Function::FSingle(f) => {
+        MeltgoFunction::FSingle(f) => {
             let _ = f(Arc::clone(&pp));
         }
-        Function::FDouble(f) => {
+        MeltgoFunction::FDouble(f) => {
             let _ = f(Arc::clone(&pp));
         }
     }
@@ -74,8 +69,4 @@ fn g() {
     let pp = share_pp.lock().unwrap();
     println!("pptr: {:?}", pp.get_pptr());
     println!("res : {:?}", pp.get_result());
-}
-
-fn main() {
-    print_error(ErrorState::ImportantError, 1, "a", "b");
 }
