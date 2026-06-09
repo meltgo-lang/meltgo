@@ -2,12 +2,12 @@ mod meltgo_error;
 mod mlw;
 mod parser;
 
+use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::{Arc, Mutex};
 
 use mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
 
-use parser::ast::{Function, NodeBuf};
-use parser::parser::defvar;
+use parser::ast::{ErrorBuf, Function, NodeBuf};
 
 use meltgo_error::emitter;
 
@@ -18,7 +18,7 @@ enum DU {
     DNone,
     DSome,
 }
-
+/*
 fn f() -> Result<(), Box<dyn std::error::Error>> {
     let pp = Arc::new(Mutex::new(PseudoPointer::new()));
     let shared_pp = Arc::clone(&pp);
@@ -28,17 +28,28 @@ fn f() -> Result<(), Box<dyn std::error::Error>> {
     let f = buf.get_function(index);
     match f {
         Function::FSingle(f) => {
-            let _ = f(Arc::clone(&pp));
+            let _ = f(Arc::clone(&buf.error_buf), Arc::clone(&pp));
         }
         Function::FDouble(f) => {
-            let _ = f(Arc::clone(&pp));
+            let _ = f(Arc::clone(&buf.error_buf), Arc::clone(&pp));
         }
     }
     let pp = pp.lock().unwrap();
     println!("pptr: {:?}", pp.get_pptr());
     println!("typs: {:?}", pp.get_result());
+    let err_buf = buf.error_buf.lock().unwrap();
+    print_error(
+        err_buf.errors[0].1,
+        err_buf.errors[0].2,
+        err_buf.errors[0].3.as_str(),
+        err_buf.errors[0].4.as_str(),
+        "src\\main.melg",
+        err_buf.errors[0].0.line,
+        err_buf.errors[0].0.column,
+    );
     Ok(())
 }
+*/
 
 fn g() {
     let pp = PseudoPointer::<DU>::new();
@@ -77,5 +88,13 @@ fn g() {
 }
 
 fn main() {
-    print_error(ErrorState::ImportantError, 1, "a", "b");
+    print_error(
+        ErrorState::ImportantError,
+        NonZeroU32::new(1).unwrap(),
+        "a",
+        "b",
+        "src\\main.melg",
+        NonZeroUsize::new(1).unwrap(),
+        NonZeroUsize::new(1).unwrap(),
+    );
 }

@@ -1,0 +1,11 @@
+package main;
+
+import std::fmt;
+
+effect fetch(&url: str) -> &str;
+
+func f() {
+}
+
+func main() {
+}

@@ -123,8 +123,7 @@ where
     pub fn new(pp: Arc<Mutex<PseudoPointer<T>>>, d: Vec<T>) -> Self {
         let id: usize;
         {
-            let mut shared_pp = pp.lock().unwrap();
-            id = shared_pp.add(d);
+            id = pp.lock().unwrap().add(d);
         }
         Self { pp: pp, id: id }
     }
@@ -133,26 +132,22 @@ where
         self.id
     }
 
-    pub fn add_sub(&mut self, d: Vec<T>) {
-        let mut shared_pp = self.pp.lock().unwrap();
-        shared_pp.add_sub(self.id, d);
+    pub fn add_sub(&self, d: Vec<T>) {
+        self.pp.lock().unwrap().add_sub(self.id, d);
     }
 
     pub fn set_type(&self, t: String) {
-        let mut pp = self.pp.lock().unwrap();
-        pp.set_type(self.id, t);
+        self.pp.lock().unwrap().set_type(self.id, t);
     }
 
     pub fn unify<T2>(&self, tv: &MLWTypeVar<T2>)
     where
         T2: PartialEq + Clone + Hash + Eq,
     {
-        let mut pp = self.pp.lock().unwrap();
-        pp.unify(self.id, tv.get_id());
+        self.pp.lock().unwrap().unify(self.id, tv.get_id());
     }
     pub fn unify_sub(&self, t1: T, t2: T) {
-        let mut pp = self.pp.lock().unwrap();
-        pp.unify_sub(t1, t2);
+        self.pp.lock().unwrap().unify_sub(t1, t2);
     }
 }
 
