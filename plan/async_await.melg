@@ -1,11 +1,18 @@
 package main;
 
 import std::fmt;
+import std::net::Html;
 
-effect fetch(&url: str) -> &str;
+effect func fetch(&url: str) -> &str;
 
-func f() {
+func f() -> Html / fetch {
+    let response = fetch("https://example.com");
+    response
 }
 
 func main() {
+    with func fetch(&url: str) -> Html {
+        Html::fetch(url)
+    }
+    fmt::println!("{}", f().get_content());
 }

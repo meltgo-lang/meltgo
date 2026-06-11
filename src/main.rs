@@ -1,23 +1,44 @@
 mod meltgo_error;
 mod mlw;
-mod parser;
 
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::{Arc, Mutex};
 
 use mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
 
+use meltgo_error::emitter::*;
 use parser::ast::{ErrorBuf, Function, NodeBuf};
-
-use meltgo_error::emitter;
-
-use crate::meltgo_error::emitter::*;
 
 #[derive(Clone, PartialEq, Debug, Hash, Eq)]
 enum DU {
     DNone,
     DSome,
 }
+
+fn main() {
+    print_error(
+        ErrorState::ImportantError,
+        NonZeroU32::new(1).unwrap(),
+        "a",
+        "b",
+        "src\\main.melg",
+        NonZeroUsize::new(1).unwrap(),
+        NonZeroUsize::new(1).unwrap(),
+    );
+    let mut sm = StatementManager::new(
+        r"
+package main;
+import std::fmt;
+;
+let a = 0;
+func main() {
+    let b = 1;
+}",
+    );
+    sm.marking();
+    println!("{:?}", sm)
+}
+
 /*
 fn f() -> Result<(), Box<dyn std::error::Error>> {
     let pp = Arc::new(Mutex::new(PseudoPointer::new()));
@@ -85,16 +106,4 @@ fn g() {
     let pp = share_pp.lock().unwrap();
     println!("pptr: {:?}", pp.get_pptr());
     println!("res : {:?}", pp.get_result());
-}
-
-fn main() {
-    print_error(
-        ErrorState::ImportantError,
-        NonZeroU32::new(1).unwrap(),
-        "a",
-        "b",
-        "src\\main.melg",
-        NonZeroUsize::new(1).unwrap(),
-        NonZeroUsize::new(1).unwrap(),
-    );
 }

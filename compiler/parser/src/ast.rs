@@ -6,7 +6,6 @@ use std::{
 use crate::{
     meltgo_error::emitter::ErrorState,
     mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer},
-    parser::ast::Ownership::Borrow,
 };
 
 #[derive(PartialEq, Clone, Debug, Hash, Eq)]

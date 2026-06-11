@@ -326,6 +326,7 @@ dependencies = [
  "cranelift-native",
  "cranelift-object",
  "nom",
+ "parser",
  "regex",
  "target-lexicon",
 ]
@@ -356,6 +357,10 @@ dependencies = [
  "indexmap",
  "memchr",
 ]
+
+[[package]]
+name = "parser"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"
