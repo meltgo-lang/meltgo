@@ -2,7 +2,7 @@ use std::sync::OnceLock;
 
 use regex::Regex;
 
-use crate::parser::statements::statement::Statement;
+use super::statement::Statement;
 
 #[derive(Debug)]
 pub struct StatementManager<'a> {

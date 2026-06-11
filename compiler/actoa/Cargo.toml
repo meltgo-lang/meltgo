@@ -1,5 +1,5 @@
 [package]
-name = "lexer"
+name = "actoa"
 version = "0.1.0"
 edition = "2024"
 

@@ -3,6 +3,10 @@
 version = 4
 
 [[package]]
+name = "actoa"
+version = "0.1.0"
+
+[[package]]
 name = "aho-corasick"
 version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -318,17 +322,26 @@ checksum = "953f07c43838f8e6f9758cab68bf5bed85465e7587ebe0b823f1bcd81978ad3a"
 name = "meltgo"
 version = "0.1.0"
 dependencies = [
- "colored",
+ "actoa",
  "cranelift",
  "cranelift-codegen",
  "cranelift-frontend",
  "cranelift-module",
  "cranelift-native",
  "cranelift-object",
+ "meltgo-errors",
  "nom",
- "parser",
+ "popdack",
+ "psictre",
  "regex",
  "target-lexicon",
+]
+
+[[package]]
+name = "meltgo-errors"
+version = "0.1.0"
+dependencies = [
+ "colored",
 ]
 
 [[package]]
@@ -359,8 +372,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "parser"
+name = "popdack"
 version = "0.1.0"
+dependencies = [
+ "actoa",
+ "psictre",
+ "regex",
+]
 
 [[package]]
 name = "proc-macro2"
@@ -369,6 +387,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "psictre"
+version = "0.1.0"
+dependencies = [
+ "actoa",
+ "meltgo-errors",
 ]
 
 [[package]]
@@ -396,9 +422,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.12.3"
+version = "1.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e10754a14b9137dd7b1e3e5b0493cc9171fdd105e0ab477f51b72e7f3ac0e276"
+checksum = "f1292b7759ae1cb9ec195452d1390a074f0cd8541ab7a5a8c31cd6db45d4a6ba"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -419,9 +445,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.10"
+version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
+checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "rustc-hash"

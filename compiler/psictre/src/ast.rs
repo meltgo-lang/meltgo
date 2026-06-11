@@ -1,12 +1,10 @@
 use std::{
-    num::{NonZero, NonZeroU32, NonZeroUsize},
+    num::{NonZeroU32, NonZeroUsize},
     sync::{Arc, Mutex},
 };
 
-use crate::{
-    meltgo_error::emitter::ErrorState,
-    mlw::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer},
-};
+use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
+use meltgo_errors::*;
 
 #[derive(PartialEq, Clone, Debug, Hash, Eq)]
 pub enum Ownership {
@@ -235,7 +233,10 @@ impl<'a> NodeBuf<'a> {
                         MLWTypeVar::new(Arc::clone(&pp), vec![]),
                         MLWFunction::<(MLWTypeVar<Ownership>, MLWTypeVar<Ownership>)>::new(
                             Box::new(|(x, y)| {
-                                x.unify_sub(Borrow(x.get_id()), Borrow(y.get_id()));
+                                x.unify_sub(
+                                    Ownership::Borrow(x.get_id()),
+                                    Ownership::Borrow(y.get_id()),
+                                );
                                 x.unify(&y);
                                 (x, y)
                             }),
