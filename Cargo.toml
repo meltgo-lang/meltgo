@@ -3,6 +3,19 @@ name = "meltgo"
 version = "0.1.0"
 edition = "2024"
 
+[workspace]
+members = [
+    "compiler/*"
+]
+
+[workspace.dependencies]
+actoa = { path = "compiler/actoa" }
+popdack = { path = "compiler/popdack" }
+psictre = { path = "compiler/psictre" }
+meltgo-errors = { path = "compiler/meltgo-errors" }
+colored = "3.1.1"
+regex = "1.12.4"
+
 [dependencies]
 actoa = { path = "compiler/actoa" }
 popdack = { path = "compiler/popdack" }

@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-actoa = { path = "../actoa" }
-psictre = { path = "../psictre" }
-regex = "1.12.4"
+regex = { workspace = true }
+actoa = { workspace = true }
+psictre = { workspace = true }
