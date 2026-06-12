@@ -2,16 +2,18 @@ use std::sync::OnceLock;
 
 use regex::Regex;
 
-use super::statement::Statement;
-
-#[derive(Debug)]
-pub struct StatementManager<'a> {
-    source_code: &'a str,
-    cutted_code: Vec<String>,
-    statements: Vec<Statement>,
+pub trait Statement<T> {
+    fn mapping(input: &str) -> T;
 }
 
-impl<'a> StatementManager<'a> {
+#[derive(Debug)]
+pub struct StatementManager<'a, T> {
+    source_code: &'a str,
+    cutted_code: Vec<String>,
+    statements: Vec<T>,
+}
+
+impl<'a, T: Statement<T>> StatementManager<'a, T> {
     pub fn new(source_code: &'a str) -> Self {
         Self {
             source_code,
@@ -31,11 +33,11 @@ impl<'a> StatementManager<'a> {
 
     pub fn marking(&mut self) {
         for s in self.cutted_code.iter() {
-            self.statements.push(Statement::mapping(s));
+            self.statements.push(T::mapping(s));
         }
     }
 
-    pub fn get_statements(&self) -> &Vec<Statement> {
+    pub fn get_statements(&self) -> &Vec<T> {
         &self.statements
     }
 }

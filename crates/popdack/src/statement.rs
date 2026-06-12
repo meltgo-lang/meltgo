@@ -33,10 +33,4 @@ impl Statement {
             _ => Self::None,
         }
     }
-
-    // pub fn parse(&self, input: &str) -> IResult<&str, &str> {
-    //     match &self {
-    //        Self::Let => Ok(("", "")),
-    //     }
-    // }
 }

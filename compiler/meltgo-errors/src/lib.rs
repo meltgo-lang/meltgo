@@ -1,3 +1,3 @@
-pub mod emitter;
+mod emitter;
 
 pub use emitter::*;
