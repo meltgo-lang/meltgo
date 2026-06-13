@@ -29,6 +29,13 @@ name = "lemter"
 version = "0.1.0"
 
 [[package]]
+name = "lexer"
+version = "0.1.0"
+dependencies = [
+ "lemter",
+]
+
+[[package]]
 name = "meltgo"
 version = "0.1.0"
 dependencies = [

@@ -15,6 +15,7 @@ lemter = { path = "crates/lemter" }
 popdack = { path = "crates/popdack" }
 psictre = { path = "crates/psictre" }
 meltgo-errors = { path = "compiler/meltgo-errors" }
+lexer = { path = "compiler/lexer" }
 colored = "3.1.1"
 regex = "1.12.4"
 cranelift = "0.132.1"

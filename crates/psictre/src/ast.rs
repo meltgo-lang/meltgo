@@ -1,4 +1,5 @@
 use std::{
+    hash::Hash,
     num::{NonZeroU32, NonZeroUsize},
     sync::{Arc, Mutex},
 };
@@ -6,9 +7,12 @@ use std::{
 use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
 use meltgo_errors::*;
 
-#[derive(PartialEq, Clone, Debug, Hash, Eq)]
-pub enum Ownership {
-    Borrow(usize),
+pub trait Node<T1, T2>
+where
+    T1: Clone + Hash + Eq + PartialEq,
+    T2: Node<T1, T2>,
+{
+    fn mapping(&self, node_buf: &NodeBuf<T1, T2>) -> Function<T1>;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -51,57 +55,37 @@ impl ErrorBuf {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum Node<'a> {
-    Number {
-        pos: Position,
-        value: i32,
-    },
-    AddOp {
-        pos: Position,
-        l: Ref,
-        r: Ref,
-    },
-    SubOp {
-        pos: Position,
-        l: Ref,
-        r: Ref,
-    },
-    Let {
-        pos: Position,
-        vname: &'a str,
-        is_mut: bool,
-        expr: Ref,
-    },
-}
-
-pub enum Function {
-    FSingle(
-        Box<
-            dyn Fn(
-                Arc<Mutex<ErrorBuf>>,
-                Arc<Mutex<PseudoPointer<Ownership>>>,
-            ) -> MLWTypeVar<Ownership>,
-        >,
-    ),
+pub enum Function<T>
+where
+    T: Clone + Hash + Eq + PartialEq,
+{
+    FSingle(Box<dyn Fn(Arc<Mutex<ErrorBuf>>, Arc<Mutex<PseudoPointer<T>>>) -> MLWTypeVar<T>>),
     FDouble(
         Box<
             dyn Fn(
                 Arc<Mutex<ErrorBuf>>,
-                Arc<Mutex<PseudoPointer<Ownership>>>,
-            ) -> (MLWTypeVar<Ownership>, MLWTypeVar<Ownership>),
+                Arc<Mutex<PseudoPointer<T>>>,
+            ) -> (MLWTypeVar<T>, MLWTypeVar<T>),
         >,
     ),
 }
 
-pub struct NodeBuf<'a> {
-    pp: Arc<Mutex<PseudoPointer<Ownership>>>,
+pub struct NodeBuf<T1, T2>
+where
+    T1: Clone + Hash + Eq + PartialEq,
+    T2: Node<T1, T2>,
+{
+    pp: Arc<Mutex<PseudoPointer<T1>>>,
     pub error_buf: Arc<Mutex<ErrorBuf>>,
-    pub buf: Vec<Node<'a>>,
+    pub buf: Vec<T2>,
 }
 
-impl<'a> NodeBuf<'a> {
-    pub fn new(pp: Arc<Mutex<PseudoPointer<Ownership>>>) -> Self {
+impl<T1, T2> NodeBuf<T1, T2>
+where
+    T1: Clone + Hash + Eq + PartialEq,
+    T2: Node<T1, T2>,
+{
+    pub fn new(pp: Arc<Mutex<PseudoPointer<T1>>>) -> Self {
         Self {
             pp: pp,
             error_buf: Arc::new(Mutex::new(ErrorBuf::new())),
@@ -109,148 +93,13 @@ impl<'a> NodeBuf<'a> {
         }
     }
 
-    pub fn push(&mut self, node: Node<'a>) -> usize {
+    pub fn push(&mut self, node: T2) -> usize {
         let size = self.buf.len();
         self.buf.push(node);
         size
     }
 
-    pub fn get_function(&self, id: usize) -> Function {
-        match &self.buf[id] {
-            Node::Number { pos: _, value: _ } => Function::FSingle(Box::new(|_, pp| {
-                let gl = MLWGrammarLeaf::new(
-                    MLWTypeVar::new(Arc::clone(&pp), vec![]),
-                    MLWFunction::<MLWTypeVar<Ownership>>::new(Box::new(|x| {
-                        x.set_type(String::from("i32"));
-                        x
-                    })),
-                );
-                gl.function.execute_function(gl.type_var)
-            })),
-            Node::AddOp { pos, l, r } => {
-                let fl = self.get_function(l.ptr);
-                let fr = self.get_function(r.ptr);
-                let inpos = *pos;
-                Function::FDouble(Box::new(move |err_buf, pp| {
-                    let shared_pp = Arc::clone(&pp);
-                    let shared_err_buf = Arc::clone(&err_buf);
-                    let gl = MLWGrammarLeaf::new(
-                        MLWTypeVar::new(Arc::clone(&pp), vec![]),
-                        MLWFunction::<(MLWTypeVar<Ownership>, MLWTypeVar<Ownership>)>::new(
-                            Box::new(move |(x, y)| {
-                                {
-                                    let pp = shared_pp.lock().unwrap();
-                                    let mut err_buf = shared_err_buf.lock().unwrap();
-                                    let tx = pp.get_result_from_id(x.get_id());
-                                    let ty = pp.get_result_from_id(y.get_id());
-                                    match (tx, ty) {
-                                        (Some(t1), Some(t2)) => {
-                                            if t1 == t2 {
-                                                err_buf.add(
-                                                    inpos,
-                                                    ErrorState::NormalError,
-                                                    NonZeroU32::new(1).unwrap(),
-                                                    format!("expcted '{}', found '{}'", t1, t2),
-                                                    String::from(""),
-                                                );
-                                            }
-                                        }
-                                        _ => panic!(),
-                                    }
-                                }
-                                (x, y)
-                            }),
-                        ),
-                    );
-                    gl.function.execute_function((
-                        match &fl {
-                            Function::FSingle(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)),
-                            Function::FDouble(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)).0,
-                        },
-                        match &fr {
-                            Function::FSingle(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)),
-                            Function::FDouble(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)).0,
-                        },
-                    ))
-                }))
-            }
-            Node::SubOp { pos, l, r } => {
-                let fl = self.get_function(l.ptr);
-                let fr = self.get_function(r.ptr);
-                let inpos = *pos;
-                Function::FDouble(Box::new(move |err_buf, pp| {
-                    let shared_pp = Arc::clone(&pp);
-                    let shared_err_buf = Arc::clone(&err_buf);
-                    let gl = MLWGrammarLeaf::new(
-                        MLWTypeVar::new(Arc::clone(&pp), vec![]),
-                        MLWFunction::<(MLWTypeVar<Ownership>, MLWTypeVar<Ownership>)>::new(
-                            Box::new(move |(x, y)| {
-                                {
-                                    let pp = shared_pp.lock().unwrap();
-                                    let mut err_buf = shared_err_buf.lock().unwrap();
-                                    let tx = pp.get_result_from_id(x.get_id());
-                                    let ty = pp.get_result_from_id(y.get_id());
-                                    match (tx, ty) {
-                                        (Some(t1), Some(t2)) => {
-                                            if t1 != t2 {
-                                                err_buf.add(
-                                                    inpos,
-                                                    ErrorState::NormalError,
-                                                    NonZeroU32::new(1).unwrap(),
-                                                    format!("expcted '{}', found '{}'", t1, t2),
-                                                    String::from(""),
-                                                );
-                                            }
-                                        }
-                                        _ => panic!(),
-                                    }
-                                }
-                                (x, y)
-                            }),
-                        ),
-                    );
-                    gl.function.execute_function((
-                        match &fl {
-                            Function::FSingle(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)),
-                            Function::FDouble(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)).0,
-                        },
-                        match &fr {
-                            Function::FSingle(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)),
-                            Function::FDouble(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)).0,
-                        },
-                    ))
-                }))
-            }
-            Node::Let {
-                pos: _,
-                vname: _,
-                is_mut: _,
-                expr,
-            } => {
-                let f = self.get_function(expr.ptr);
-                Function::FDouble(Box::new(move |err_buf, pp| {
-                    let gl = MLWGrammarLeaf::new(
-                        MLWTypeVar::new(Arc::clone(&pp), vec![]),
-                        MLWFunction::<(MLWTypeVar<Ownership>, MLWTypeVar<Ownership>)>::new(
-                            Box::new(|(x, y)| {
-                                x.unify_sub(
-                                    Ownership::Borrow(x.get_id()),
-                                    Ownership::Borrow(y.get_id()),
-                                );
-                                x.unify(&y);
-                                (x, y)
-                            }),
-                        ),
-                    );
-                    gl.function.execute_function((
-                        gl.type_var,
-                        match &f {
-                            Function::FSingle(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)),
-                            Function::FDouble(f) => f(Arc::clone(&err_buf), Arc::clone(&pp)).0,
-                        },
-                    ))
-                }))
-            }
-        }
+    pub fn get_function(&self, id: usize) -> Function<T1> {
+        self.buf[id].mapping(&self)
     }
 }
