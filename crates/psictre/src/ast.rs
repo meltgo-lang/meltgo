@@ -5,7 +5,7 @@ use std::{
 };
 
 use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
-use meltgo_errors::*;
+use suzlun_errors::*;
 
 pub trait Node<T1, T2>
 where

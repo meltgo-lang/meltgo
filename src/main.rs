@@ -4,10 +4,11 @@ use std::sync::{Arc, Mutex, OnceLock};
 use regex::Regex;
 
 use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
-use lemter::*;
-use meltgo_errors::*;
+use lempet::*;
+use lexer::*;
 use popdack::{Statement, StatementManager};
 use psictre::ast::{ErrorBuf, Function, NodeBuf};
+use suzlun_errors::*;
 
 #[derive(Debug)]
 pub enum MeltgoStatement {

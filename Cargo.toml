@@ -1,5 +1,5 @@
 [package]
-name = "meltgo"
+name = "suzlun"
 version = "0.1.0"
 edition = "2024"
 
@@ -11,10 +11,10 @@ members = [
 
 [workspace.dependencies]
 actoa = { path = "crates/actoa" }
-lemter = { path = "crates/lemter" }
+lempet = { path = "crates/lempet" }
 popdack = { path = "crates/popdack" }
 psictre = { path = "crates/psictre" }
-meltgo-errors = { path = "compiler/meltgo-errors" }
+suzlun-errors = { path = "compiler/suzlun-errors" }
 lexer = { path = "compiler/lexer" }
 colored = "3.1.1"
 regex = "1.12.4"
@@ -27,10 +27,11 @@ cranelift-object = "0.132.1"
 
 [dependencies]
 actoa = { workspace = true }
-lemter = { workspace = true }
+lempet = { workspace = true }
 popdack = { workspace = true }
 psictre = { workspace = true }
-meltgo-errors = { workspace = true }
+suzlun-errors = { workspace = true }
+lexer = { workspace = true }
 regex = { workspace = true }
 
 nom = "8.0.0"
