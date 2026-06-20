@@ -1,10 +1,9 @@
 use std::num::{NonZeroU32, NonZeroUsize};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::OnceLock;
 
 use regex::Regex;
 
 use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
-use lempet::*;
 use lexer::*;
 use popdack::{Statement, StatementManager};
 use psictre::ast::{ErrorBuf, Function, NodeBuf};
@@ -56,5 +55,7 @@ func main() {
 }",
     );
     sm.marking();
-    println!("{:?}", sm)
+    println!("{:?}", sm);
+
+    lexer_test("abcdef");
 }
