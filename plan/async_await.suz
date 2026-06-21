@@ -1,0 +1,18 @@
+package main;
+
+import std::fmt;
+import std::net::Html;
+
+func f() -> Html / Html {
+    let response = Html::fetch("https://example.com");
+    response
+}
+
+func main() {
+    with Html {
+        func fetching() {
+            ()
+        }
+    }
+    fmt::println!("{}", f().get_content());
+}
