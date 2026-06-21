@@ -37,7 +37,7 @@ impl Lexer {
     pub fn word(&mut self, input: String, w: &str, idx: usize) -> Result<(String, usize), String> {
         let s = String::from(w);
         if input.starts_with(&s) {
-            self.tokens.push(s.clone());
+            self.tokens[idx] = s.clone();
             Ok((match input.char_indices().nth(s.len()) {
                 Some((ch_idx, _)) => String::from(&input[ch_idx..]),
                 None => String::new(),
@@ -51,7 +51,7 @@ impl Lexer {
     pub fn repeat(&mut self, input: String, w: &str, idx: usize) -> Result<(String, usize), String> {
         let s = String::from(w);
         if input.starts_with(&s) {
-            self.tokens.push(s.clone());
+            self.tokens[idx] = self.tokens[idx].clone() + &s;
             Ok((match input.char_indices().nth(s.len()) {
                 Some((ch_idx, _)) => String::from(&input[ch_idx..]),
                 None => String::new(),
@@ -89,6 +89,7 @@ impl Lexer {
     pub fn get_tokens(&self) -> Vec<&str> {
         self.tokens
             .iter()
+            .filter(|x| !x.is_empty())
             .map(|x| x.as_str())
             .collect::<Vec<&str>>()
     }
@@ -126,6 +127,9 @@ impl<'a> LexerBuilder<'a> {
         let mut input = String::from(input);
         let mut idx: usize = 0;
         while idx < self.vec.len() {
+            if idx == self.lexer.tokens.len() {
+                self.lexer.tokens.push(String::new());
+            }
             let result =
                 match self.vec[idx] {
                     LexerFunction::Word(w) => self.lexer.word(input.clone(), w, idx),
