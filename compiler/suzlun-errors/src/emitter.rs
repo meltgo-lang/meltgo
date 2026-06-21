@@ -22,7 +22,7 @@ pub fn print_error(
         ErrorState::ImportantError => {
             println!(
                 "{}: {}",
-                format!("error[IE{:0>4}]", error_num).red(),
+                format!("ERROR[IE{:0>4}]", error_num).red(),
                 error_msg
             );
             println!(
@@ -38,7 +38,7 @@ pub fn print_error(
         ErrorState::NormalError => {
             println!(
                 "{}: {}",
-                format!("error[NE{:0>4}]", error_num).red(),
+                format!("ERROR[NE{:0>4}]", error_num).red(),
                 error_msg
             );
             println!(

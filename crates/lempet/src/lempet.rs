@@ -1,13 +1,30 @@
+fn substring(s: &str, start: usize, length: usize) -> &str {
+    if length == 0 {
+        return "";
+    }
+
+    let mut ci = s.char_indices();
+    let byte_start = match ci.nth(start) {
+        Some(x) => x.0,
+        None => return "",
+    };
+
+    match ci.nth(length - 1) {
+        Some(x) => &s[byte_start..x.0],
+        None => &s[byte_start..],
+    }
+}
+
 enum LexFunction {
-    F(Box<dyn Fn(String, &mut Vec<String>) -> Result<String, &str>>),
+    F(Box<dyn Fn(String, &mut Vec<String>) -> Result<String, String>>),
 }
 
 impl LexFunction {
-    pub fn unwrap<'a>(
-        &'a self,
+    pub fn run(
+        &self,
         input: String,
-        vec: &'a mut Vec<String>,
-    ) -> Result<String, &'a str> {
+        vec: &mut Vec<String>,
+    ) -> Result<String, String> {
         match &self {
             Self::F(f) => f(input, vec),
             _ => panic!(""),
@@ -38,16 +55,23 @@ impl Lexer {
                     None => String::new(),
                 })
             } else {
-                Err("")
+                Err(format!("'{}...' missmatch '{}'", substring(&input, 0, 4), s))
             }
         })));
         self
     }
 
-    pub fn excute(&mut self, input: &str) {
+    pub fn run(&mut self, input: &str) {
         let mut input = String::from(input);
         for item in self.vec.iter() {
-            input = item.unwrap(input, &mut self.tokens).unwrap();
+            let result = item.run(input, &mut self.tokens);
+            match result {
+                Ok(res) => input = res,
+                Err(msg) => {
+                    println!("lexer error: {}", msg);
+                    return ();
+                }
+            }
         }
     }
 
