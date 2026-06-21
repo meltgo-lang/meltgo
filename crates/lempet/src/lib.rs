@@ -1,7 +1,7 @@
 mod lempet;
 
-pub use lempet::Lexer;
+pub use lempet::LexerBuilder;
 
-pub fn lexer() -> Lexer {
-    Lexer::new()
+pub fn lexer<'a>() -> LexerBuilder<'a> {
+    LexerBuilder::<'a>::new()
 }

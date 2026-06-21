@@ -57,5 +57,5 @@ fn main() {
 //     sm.marking();
 //     println!("{:?}", sm);
 
-    lexer_test("abcdef");
+    lexer_test("af;cc");
 }
