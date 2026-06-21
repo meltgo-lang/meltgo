@@ -44,7 +44,7 @@ impl Lexer {
             }, idx + 1))
         } else {
             self.err_flg = true;
-            Err(format!("'{}...' missmatch '{}'", substring(&input, 0, 4), s))
+            Err(format!("'{}...' missmatch '{}'", substring(&input, 0, s.char_indices().count()), s))
         }
     }
 
@@ -61,7 +61,7 @@ impl Lexer {
             Err("empty input".to_string())
         }
         else {
-            Err(format!("'{}...' missmatch '{}'", substring(&input, 0, 4), s))
+            Err(format!("'{}...' missmatch '{}'", substring(&input, 0, s.char_indices().count()), s))
         }
     }
 

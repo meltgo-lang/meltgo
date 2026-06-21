@@ -40,7 +40,7 @@ fn main() {
         NonZeroU32::new(1).unwrap(),
         "a",
         "b",
-        "src\\main.melg",
+        "src/main.suz",
         NonZeroUsize::new(1).unwrap(),
         NonZeroUsize::new(1).unwrap(),
     );
