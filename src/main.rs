@@ -44,17 +44,16 @@ fn main() {
         NonZeroUsize::new(1).unwrap(),
         NonZeroUsize::new(1).unwrap(),
     );
-//     let mut sm = StatementManager::<MeltgoStatement>::new(
-//         r"
-// package main;
-// import std::fmt;
-// ;
-// let a = 0;
-// func main() {
-//     let b = 1;
-// }",
-//     );
-//     sm.marking();
-//     println!("{:?}", sm);
-
+    //     let mut sm = StatementManager::<MeltgoStatement>::new(
+    //         r"
+    // package main;
+    // import std::fmt;
+    // ;
+    // let a = 0;
+    // func main() {
+    //     let b = 1;
+    // }",
+    //     );
+    //     sm.marking();
+    //     println!("{:?}", sm);
 }
