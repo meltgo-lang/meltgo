@@ -16,6 +16,8 @@ popdack = { path = "crates/popdack" }
 psictre = { path = "crates/psictre" }
 suzlun-errors = { path = "compiler/suzlun-errors" }
 lexer = { path = "compiler/lexer" }
+randf = { path = "compiler/randf" }
+
 colored = "3.1.1"
 regex = "1.12.4"
 cranelift = "0.132.1"

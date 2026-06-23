@@ -2,7 +2,7 @@ use lempet::*;
 
 #[test]
 fn err_jmp_test() {
-    let mut builder = LexerBuilder::new();
+    let mut builder = lexer();
     let result = builder
         .word("a")
         .word("b")
@@ -15,7 +15,7 @@ fn err_jmp_test() {
 
 #[test]
 fn predicate_test() {
-    let mut builder = LexerBuilder::new();
+    let mut builder = lexer();
     let result = builder
         .predicate(|c| c.is_alphabetic())
         .word(";")

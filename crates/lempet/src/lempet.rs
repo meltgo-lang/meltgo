@@ -15,19 +15,25 @@ fn substring(s: &str, start: usize, length: usize) -> &str {
     }
 }
 
+#[derive(Clone)]
 enum LexerFunction<'a> {
     Word(&'a str),
     Repeat(&'a str),
-    ErrJmp(char),
-    Call(&'a mut LexerBuilder<'a>),
+    ErrJmp(&'a str),
+    Call(LexerBuilder<'a>),
     Predicate(Box<dyn Fn(char) -> bool>),
     EOF,
 }
 
+enum LexerResult<'a> {
+    Str(String),
+    LB(LexerBuilder<'a>)
+}
+
+#[derive(Clone)]
 struct Lexer {
     tokens: Vec<String>,
     err_flg: bool,
-    add: usize,
 }
 
 impl Lexer {
@@ -35,18 +41,17 @@ impl Lexer {
         Self {
             tokens: vec![],
             err_flg: false,
-            add: 0,
         }
     }
 
-    pub fn word(&mut self, input: String, w: &str, idx: usize) -> Result<(String, usize), String> {
+    pub fn word(&mut self, input: String, w: &str, idx: usize) -> Result<(LexerResult, usize), String> {
         let s = String::from(w);
         if input.starts_with(&s) {
             self.tokens[idx] = s.clone();
             Ok((
                 match input.char_indices().nth(s.len()) {
-                    Some((ch_idx, _)) => String::from(&input[ch_idx..]),
-                    None => String::new(),
+                    Some((ch_idx, _)) => LexerResult::Str(String::from(&input[ch_idx..])),
+                    None => LexerResult::Str(String::new()),
                 },
                 idx + 1,
             ))
@@ -65,14 +70,14 @@ impl Lexer {
         input: String,
         w: &str,
         idx: usize,
-    ) -> Result<(String, usize), String> {
+    ) -> Result<(LexerResult, usize), String> {
         let s = String::from(w);
         if input.starts_with(&s) {
             self.tokens[idx] = self.tokens[idx].clone() + &s;
             Ok((
                 match input.char_indices().nth(s.len()) {
-                    Some((ch_idx, _)) => String::from(&input[ch_idx..]),
-                    None => String::new(),
+                    Some((ch_idx, _)) => LexerResult::Str(String::from(&input[ch_idx..])),
+                    None => LexerResult::Str(String::new()),
                 },
                 idx,
             ))
@@ -89,21 +94,25 @@ impl Lexer {
         }
     }
 
+    pub fn repeat<'a>(&mut self, input: String, lb: &mut LexerBuilder<'a>, idx: usize) -> Result<(LexerResult<'a>, usize), String> {
+        Err("".to_string())
+    }
+
     pub fn err_jmp(
         &mut self,
         input: String,
-        w: char,
+        w: &str,
         idx: usize,
-    ) -> Result<(String, usize), String> {
+    ) -> Result<(LexerResult, usize), String> {
         if self.err_flg {
             let vec = input.char_indices().collect::<Vec<(usize, char)>>();
             match vec.get(1) {
                 Some((ch_idx, _)) => {
-                    if vec[0].1 == w {
+                    if input.starts_with(w) {
                         self.err_flg = false;
-                        Ok((input, idx + 1))
+                        Ok((LexerResult::Str(input), idx + 1))
                     } else {
-                        Ok((String::from(&input[*ch_idx..]), idx))
+                        Ok((LexerResult::Str(String::from(&input[*ch_idx..])), idx))
                     }
                 }
                 None => {
@@ -111,38 +120,33 @@ impl Lexer {
                     Err("empty input".to_string())},
             }
         } else {
-            Ok((input, idx + 1))
+            Ok((LexerResult::Str(input), idx + 1))
         }
     }
 
-    pub fn call<'a>(&mut self, input: String, lb: &mut LexerBuilder<'a>, idx: usize) -> Result<(String, usize), String> {
+    pub fn call<'a>(&mut self, input: String, mut lb: LexerBuilder<'a>, idx: usize) -> Result<(LexerResult<'a>, usize), String> {
         let _ = lb.run(input.as_str());
         if lb.lexer.err_flg {
             self.err_flg = true;
             Err(String::from("failure to call"))
         }
         else {
-            let tokens = lb.get_tokens();
-            for item in tokens.clone() {
-                self.tokens.push((*item).to_string());
-            }
-            self.add = tokens.len();
-            Ok((lb.rest.clone().unwrap(), idx + 1))
+            Ok((LexerResult::LB(lb), idx + 1))
         }
     }
 
     pub fn predicate(
         &mut self,
         input: String,
-        f: impl Fn(char) -> bool,
+        f: Box<dyn Fn(char) -> bool>,
         idx: usize,
-    ) -> Result<(String, usize), String> {
+    ) -> Result<(LexerResult, usize), String> {
         let vec = input.char_indices().collect::<Vec<(usize, char)>>();
         match vec.get(0) {
             Some((ch_idx, ch)) => {
                 if f(*ch) {
                     self.tokens[idx] = self.tokens[idx].clone() + &ch.to_string();
-                    Ok((String::from(&input[ch_idx + ch.len_utf8()..]), idx+1))
+                    Ok((LexerResult::Str(String::from(&input[ch_idx + ch.len_utf8()..])), idx+1))
                 } else {
                     self.err_flg = true;
                     Err(format!(
@@ -157,9 +161,9 @@ impl Lexer {
         }
     }
 
-    pub fn eof(&mut self, input: String, idx: usize) -> Result<(String, usize), String> {
+    pub fn eof(&mut self, input: String, idx: usize) -> Result<(LexerResult, usize), String> {
         if input.is_empty() {
-            Ok((input, idx +1))
+            Ok((LexerResult::Str(input), idx +1))
         }
         else {
             self.err_flg = true;
@@ -176,6 +180,7 @@ impl Lexer {
     }
 }
 
+#[derive(Clone)]
 pub struct LexerBuilder<'a> {
     vec: Vec<LexerFunction<'a>>,
     lexer: Lexer,
@@ -201,18 +206,18 @@ impl<'a> LexerBuilder<'a> {
         self
     }
 
-    pub fn err_jmp(&mut self, w: char) -> &mut Self {
+    pub fn err_jmp(&mut self, w: &'a str) -> &mut Self {
         self.vec.push(LexerFunction::ErrJmp(w));
         self
     }
 
-    pub fn call(&mut self, lb: &'a mut LexerBuilder<'a>) -> &mut Self {
+    pub fn call(&mut self, lb: LexerBuilder<'a>) -> &mut Self {
         self.vec.push(LexerFunction::Call(lb));
         self
     }
 
-    pub fn predicate(&mut self, f: impl Fn(char) -> bool + 'static) -> &mut Self {
-        self.vec.push(LexerFunction::Predicate(Box::new(f)));
+    pub fn predicate(&mut self, f: Box<dyn Fn(char) -> bool + 'static>) -> &mut Self {
+        self.vec.push(LexerFunction::Predicate(f));
         self
     }
 
@@ -224,43 +229,47 @@ impl<'a> LexerBuilder<'a> {
     pub fn run(&mut self, input: &str) -> &mut Self {
         let mut input = String::from(input);
         let mut idx: usize = 0;
-        let mut val_idx: usize = 0;
-        while val_idx < self.vec.len() {
+        while idx < self.vec.len() {
             if idx == self.lexer.tokens.len() {
                 self.lexer.tokens.push(String::new());
             }
-            let result = match self.vec[val_idx] {
+
+            let result = match self.vec[idx] {
                 LexerFunction::Word(w) => self.lexer.word(input.clone(), w, idx),
                 LexerFunction::Repeat(w) => self.lexer.repeat_str(input.clone(), w, idx),
                 LexerFunction::ErrJmp(w) => self.lexer.err_jmp(input.clone(), w, idx),
                 LexerFunction::EOF => self.lexer.eof(input.clone(), idx),
-                _ => {
-                    if let LexerFunction::Call(lb) = &mut self.vec[idx] {
-                        self.lexer.call(input.clone(), lb, idx)
+                x => {
+                    let mut ret;
+                    {
+                        if let LexerFunction::Call(lb) = &x {
+                            ret = self.lexer.call(input.clone(), lb, idx);
+                        }
                     }
-                    else if let LexerFunction::Predicate(f) = &self.vec[idx] {
-                        self.lexer.predicate(input.clone(), f, idx)
+                    {
+                        if let LexerFunction::Predicate(f) = x {
+                            ret = self.lexer.predicate(input.clone(), f, idx);
+                        }
+                        else {
+                            ret = Err("missmatch pattern".to_string());
+                        }
                     }
-                    else {
-                        Err(String::from("pattern not found"))
-                    }
+                    ret
                 }
             };
             match result {
                 Ok((new_input, new_idx)) => {
-                    input = new_input;
+                    input = match new_input {
+                        LexerResult::Str(s) => s.to_string(),
+                        LexerResult::LB(lb) => lb.rest.as_ref().unwrap().clone(),
+                    };
                     idx = new_idx;
-                    val_idx = new_idx;
                 }
                 Err(msg) => {
                     println!("{}", msg);
                     idx += 1;
-                    val_idx += 1;
-                    println!("({}, {})", idx, val_idx);
                 }
             }
-            idx += self.lexer.add;
-            self.lexer.add = 0;
         }
         self.rest = Some(input);
         self
