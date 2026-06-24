@@ -19,14 +19,14 @@ enum LexerFunction<'a> {
     Word(&'a str),
     Repeat(&'a str),
     ErrJmp(&'a str),
-    Call(&'a mut LexerBuilder<'a>),
-    Predicate(Box<dyn Fn(char) -> bool>),
+    Call(LexerBuilder<'a>),
+    Predicate(&'a Box<dyn Fn(char) -> bool>),
     EOF,
 }
 
 enum LexerResult<'a> {
     Str(String),
-    LB(&'a mut LexerBuilder<'a>)
+    LB(&'a &'a mut LexerBuilder<'a>)
 }
 
 struct Lexer {
@@ -122,7 +122,7 @@ impl Lexer {
         }
     }
 
-    pub fn call<'a>(&mut self, input: String, lb: &'a mut LexerBuilder<'a>, idx: usize) -> Result<(LexerResult<'a>, usize), String> {
+    pub fn call<'a>(&mut self, input: String, lb: &'a mut &'a mut LexerBuilder<'a>, idx: usize) -> Result<(LexerResult<'a>, usize), String> {
         let _ = lb.run(input.as_str());
         if lb.lexer.err_flg {
             self.err_flg = true;
@@ -133,10 +133,10 @@ impl Lexer {
         }
     }
 
-    pub fn predicate(
+    pub fn predicate<'a>(
         &mut self,
         input: String,
-        f: Box<dyn Fn(char) -> bool>,
+        f: &'a Box<dyn Fn(char) -> bool>,
         idx: usize,
     ) -> Result<(LexerResult, usize), String> {
         let vec = input.char_indices().collect::<Vec<(usize, char)>>();
@@ -208,12 +208,12 @@ impl<'a> LexerBuilder<'a> {
         self
     }
 
-    pub fn call(&mut self, lb: &'a mut LexerBuilder<'a>) -> &mut Self {
+    pub fn call(&mut self, lb: LexerBuilder<'a>) -> &mut Self {
         self.vec.push(LexerFunction::Call(lb));
         self
     }
 
-    pub fn predicate(&mut self, f: Box<dyn Fn(char) -> bool + 'static>) -> &mut Self {
+    pub fn predicate(&mut self, f: &'a Box<dyn Fn(char) -> bool + 'static>) -> &mut Self {
         self.vec.push(LexerFunction::Predicate(f));
         self
     }
@@ -231,21 +231,20 @@ impl<'a> LexerBuilder<'a> {
                 self.lexer.tokens.push(String::new());
             }
 
-            let result = match &mut self.vec[idx] {
+            let result = match &self.vec[idx] {
                 LexerFunction::Word(w) => self.lexer.word(input.clone(), w, idx),
                 LexerFunction::Repeat(w) => self.lexer.repeat_str(input.clone(), w, idx),
                 LexerFunction::ErrJmp(w) => self.lexer.err_jmp(input.clone(), w, idx),
                 LexerFunction::EOF => self.lexer.eof(input.clone(), idx),
-                x => {
+                _ => {
                     let mut ret;
                     {
-                        if let LexerFunction::Call(lb) = x {
-                            ret = self.lexer.call(input.clone(), lb, idx);
-                        }
-                    }
-                    {
+                        let x = &mut self.vec[idx];
                         if let LexerFunction::Predicate(f) = x {
                             ret = self.lexer.predicate(input.clone(), f, idx);
+                        }
+                        else if let LexerFunction::Call(lb) = x {
+                            ret = self.lexer.call(input.clone(), lb, idx);
                         }
                         else {
                             ret = Err("missmatch pattern".to_string());
