@@ -15,22 +15,20 @@ fn substring(s: &str, start: usize, length: usize) -> &str {
     }
 }
 
-#[derive(Clone)]
 enum LexerFunction<'a> {
     Word(&'a str),
     Repeat(&'a str),
     ErrJmp(&'a str),
-    Call(LexerBuilder<'a>),
+    Call(&'a mut LexerBuilder<'a>),
     Predicate(Box<dyn Fn(char) -> bool>),
     EOF,
 }
 
 enum LexerResult<'a> {
     Str(String),
-    LB(LexerBuilder<'a>)
+    LB(&'a mut LexerBuilder<'a>)
 }
 
-#[derive(Clone)]
 struct Lexer {
     tokens: Vec<String>,
     err_flg: bool,
@@ -124,7 +122,7 @@ impl Lexer {
         }
     }
 
-    pub fn call<'a>(&mut self, input: String, mut lb: LexerBuilder<'a>, idx: usize) -> Result<(LexerResult<'a>, usize), String> {
+    pub fn call<'a>(&mut self, input: String, lb: &'a mut LexerBuilder<'a>, idx: usize) -> Result<(LexerResult<'a>, usize), String> {
         let _ = lb.run(input.as_str());
         if lb.lexer.err_flg {
             self.err_flg = true;
@@ -180,7 +178,6 @@ impl Lexer {
     }
 }
 
-#[derive(Clone)]
 pub struct LexerBuilder<'a> {
     vec: Vec<LexerFunction<'a>>,
     lexer: Lexer,
@@ -211,7 +208,7 @@ impl<'a> LexerBuilder<'a> {
         self
     }
 
-    pub fn call(&mut self, lb: LexerBuilder<'a>) -> &mut Self {
+    pub fn call(&mut self, lb: &'a mut LexerBuilder<'a>) -> &mut Self {
         self.vec.push(LexerFunction::Call(lb));
         self
     }
@@ -234,7 +231,7 @@ impl<'a> LexerBuilder<'a> {
                 self.lexer.tokens.push(String::new());
             }
 
-            let result = match self.vec[idx] {
+            let result = match &mut self.vec[idx] {
                 LexerFunction::Word(w) => self.lexer.word(input.clone(), w, idx),
                 LexerFunction::Repeat(w) => self.lexer.repeat_str(input.clone(), w, idx),
                 LexerFunction::ErrJmp(w) => self.lexer.err_jmp(input.clone(), w, idx),
@@ -242,7 +239,7 @@ impl<'a> LexerBuilder<'a> {
                 x => {
                     let mut ret;
                     {
-                        if let LexerFunction::Call(lb) = &x {
+                        if let LexerFunction::Call(lb) = x {
                             ret = self.lexer.call(input.clone(), lb, idx);
                         }
                     }
