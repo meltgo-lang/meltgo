@@ -1,3 +1,7 @@
+mod mlw_test;
+
+use mlw_test::*;
+
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::OnceLock;
 
@@ -68,4 +72,6 @@ fn main() {
     let mut funs = lexer_fun();
     let result = builder.run("abc", &mut funs);
     println!("{:?}", result.get_tokens());
+
+    g();
 }

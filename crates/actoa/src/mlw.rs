@@ -6,8 +6,8 @@ pub struct PseudoPointer<T>
 where
     T: PartialEq + Clone + Hash + Eq,
 {
-    map: Vec<(usize, Vec<T>)>,
-    typs: Vec<Option<String>>,
+    map: Vec<usize>,
+    typs: Vec<(String, Vec<T>)>,
 }
 
 impl<T> PseudoPointer<T>
@@ -23,18 +23,19 @@ where
 
     pub fn add(&mut self, d: Vec<T>) -> usize {
         let id = self.map.len();
-        self.map.push((id, d));
-        self.typs.push(None);
+        self.map.push(id);
+        self.typs.push((String::new(), d));
         id
     }
 
     pub fn add_sub(&mut self, id: usize, ad: Vec<T>) {
-        let id = self.map[id].0;
-        self.map = self
-            .map
+        let id = self.map[id];
+        self.typs = self
+            .typs
             .iter_mut()
-            .map(|x| {
-                if (*x).0 == id {
+            .enumerate()
+            .map(|(i, x)| {
+                if id == i {
                     let (_, d) = &mut *x;
                     d.extend(ad.clone());
                     let hash: HashSet<_> = d.drain(..).collect();
@@ -49,18 +50,18 @@ where
     }
 
     pub fn unify(&mut self, target_id: usize, value_id: usize) {
-        let target = self.map[target_id].0;
+        let target = self.map[target_id];
         for i in 0..self.map.len() {
-            if self.map[i].0 == target {
+            if self.map[i] == target {
                 self.map[i] = self.map[value_id].clone();
             }
         }
     }
 
     pub fn unify_sub(&mut self, target: T, value: T) {
-        for i in 0..self.map.len() {
-            if self.map[i].1.contains(&target) {
-                let vec = &mut self.map[i].1;
+        for i in 0..self.typs.len() {
+            if self.typs[i].1.contains(&target) {
+                let vec = &mut self.typs[i].1;
                 for j in 0..vec.len() {
                     if vec[j] == target {
                         vec[j] = value.clone();
@@ -71,19 +72,19 @@ where
     }
 
     pub fn set_type(&mut self, id: usize, t: String) {
-        let id = self.map[id].0;
-        self.typs[id] = Some(t);
+        let id = self.map[id];
+        self.typs[id] = (t, self.typs[id].1.clone());
     }
 
-    pub fn get_pptr(&self) -> &Vec<(usize, Vec<T>)> {
+    pub fn get_pptr(&self) -> &Vec<usize> {
         &self.map
     }
 
-    pub fn get_result(&self) -> &Vec<Option<String>> {
+    pub fn get_result(&self) -> &Vec<(String, Vec<T>)> {
         &self.typs
     }
 
-    pub fn get_result_from_id(&self, id: usize) -> &Option<String> {
+    pub fn get_result_from_id(&self, id: usize) -> &(String, Vec<T>) {
         &self.typs[id]
     }
 }
