@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::hash::Hash;
 use std::sync::{Arc, Mutex};
+use std::marker::PhantomData;
 
 pub struct PseudoPointer<T>
 where
@@ -89,19 +90,21 @@ where
     }
 }
 
-pub struct MLWGrammarLeaf<T1, T2>
+pub struct MLWGrammarLeaf<T1, T2, T3>
 where
     T1: PartialEq + Clone + Hash + Eq,
+    T3: Fn(T2) -> T2,
 {
     pub type_var: MLWTypeVar<T1>,
-    pub function: MLWFunction<T2>,
+    pub function: MLWFunction<T2, T3>,
 }
 
-impl<T1, T2> MLWGrammarLeaf<T1, T2>
+impl<T1, T2, T3> MLWGrammarLeaf<T1, T2, T3>
 where
     T1: PartialEq + Clone + Hash + Eq,
+    T3: Fn(T2) -> T2,
 {
-    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<T2>) -> Self {
+    pub fn new(t: MLWTypeVar<T1>, f: MLWFunction<T2, T3>) -> Self {
         Self {
             type_var: t,
             function: f,
@@ -152,13 +155,20 @@ where
     }
 }
 
-pub struct MLWFunction<T> {
-    f: Box<dyn Fn(T) -> T>,
+pub struct MLWFunction<T, F>
+where
+    F: Fn(T) -> T,
+{
+    f: F,
+    _marker: PhantomData<T>,
 }
 
-impl<T> MLWFunction<T> {
-    pub fn new(f: Box<dyn Fn(T) -> T>) -> Self {
-        Self { f: f }
+impl<T, F> MLWFunction<T, F>
+where
+    F: Fn(T) -> T,
+{
+    pub fn new(f: F) -> Self {
+        Self { f: f, _marker: PhantomData.clone(), }
     }
 
     pub fn execute_function(&self, arg: T) -> T {

@@ -250,7 +250,8 @@ impl<'a> LexerBuilder<'a> {
     }
 
     pub fn repeat(mut self, lb: LexerBuilder<'a>) -> Self {
-        self.vec.push(LexerFunction::RepeatCall(Arc::new(Mutex::new(lb))));
+        self.vec
+            .push(LexerFunction::RepeatCall(Arc::new(Mutex::new(lb))));
         self
     }
 
@@ -295,12 +296,15 @@ impl<'a> LexerBuilder<'a> {
                     LexerFunction::Repeat(w) => self.lexer.repeat_str(input.clone(), w, idx),
                     LexerFunction::ErrJmp(w) => self.lexer.err_jmp(input.clone(), w, idx),
                     LexerFunction::EOF => self.lexer.eof(input.clone(), idx),
-                    LexerFunction::Predicate(f) => self.lexer.predicate(input.clone(), buf, *f, idx),
+                    LexerFunction::Predicate(f) => {
+                        self.lexer.predicate(input.clone(), buf, *f, idx)
+                    }
                     LexerFunction::Call(lb) => {
                         self.lexer.call(input.clone(), Arc::clone(lb), buf, idx)
-                    },
+                    }
                     LexerFunction::RepeatCall(lb) => {
-                        self.lexer.repeat(input.clone(), Arc::clone(lb), buf, idx)},
+                        self.lexer.repeat(input.clone(), Arc::clone(lb), buf, idx)
+                    }
                 }
             };
             match result {

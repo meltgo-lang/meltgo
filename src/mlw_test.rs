@@ -14,25 +14,25 @@ pub fn g() {
 
     let gl1 = MLWGrammarLeaf::new(
         MLWTypeVar::new(Arc::clone(&share_pp), vec![DU::DSome]),
-        MLWFunction::<MLWTypeVar<DU>>::new(Box::new(|x| {
+        MLWFunction::<MLWTypeVar<DU>, _>::new(|x| {
             x.set_type(String::from("Obj"));
             x
-        })),
+        }),
     );
     let gl2 = MLWGrammarLeaf::new(
         MLWTypeVar::new(Arc::clone(&share_pp), vec![DU::DNone]),
-        MLWFunction::<(MLWTypeVar<DU>, MLWTypeVar<DU>)>::new(Box::new(|(x, y)| {
+        MLWFunction::<(MLWTypeVar<DU>, MLWTypeVar<DU>), _>::new(|(x, y)| {
             x.unify(&y);
             (x, y)
-        })),
+        }),
     );
     let gl3 = MLWGrammarLeaf::new(
         MLWTypeVar::new(Arc::clone(&share_pp), vec![DU::DSome]),
-        MLWFunction::<(MLWTypeVar<DU>, MLWTypeVar<DU>)>::new(Box::new(|(x, y)| {
+        MLWFunction::<(MLWTypeVar<DU>, MLWTypeVar<DU>), _>::new(|(x, y)| {
             x.unify(&y);
             x.add_sub(vec![DU::DNone]);
             (x, y)
-        })),
+        }),
     );
 
     let res = gl1.function.execute_function(gl1.type_var);
