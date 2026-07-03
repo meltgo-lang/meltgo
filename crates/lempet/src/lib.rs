@@ -1,5 +1,7 @@
 mod lempet;
 
+pub mod lex;
+
 pub use lempet::{LexerBuilder, LexerFunctionsBuffer, Predicate};
 
 pub fn lexer<'a>() -> LexerBuilder<'a> {

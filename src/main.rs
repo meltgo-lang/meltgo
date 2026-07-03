@@ -1,6 +1,8 @@
 mod mlw_test;
+mod lex_t;
 
 use mlw_test::*;
+use lex_t::*;
 
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::OnceLock;
@@ -74,4 +76,5 @@ fn main() {
     println!("{:?}", result.get_tokens());
 
     g();
+    lt();
 }
