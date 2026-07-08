@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 actoa = { workspace = true }
-suzlun-errors = { workspace = true }
+cargry-errors = { workspace = true }

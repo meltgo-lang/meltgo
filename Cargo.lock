@@ -20,14 +20,20 @@ name = "cargry"
 version = "0.1.0"
 dependencies = [
  "actoa",
- "lempet",
+ "cargry-errors",
  "lexer",
  "nom",
  "popdack",
  "psictre",
  "regex",
- "suzlun-errors",
  "target-lexicon",
+]
+
+[[package]]
+name = "cargry-errors"
+version = "0.1.0"
+dependencies = [
+ "colored",
 ]
 
 [[package]]
@@ -40,14 +46,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "lempet"
-version = "0.1.0"
-
-[[package]]
 name = "lexer"
 version = "0.1.0"
 dependencies = [
- "lempet",
+ "popdack",
 ]
 
 [[package]]
@@ -79,7 +81,7 @@ name = "psictre"
 version = "0.1.0"
 dependencies = [
  "actoa",
- "suzlun-errors",
+ "cargry-errors",
 ]
 
 [[package]]
@@ -114,13 +116,6 @@ name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
-
-[[package]]
-name = "suzlun-errors"
-version = "0.1.0"
-dependencies = [
- "colored",
-]
 
 [[package]]
 name = "target-lexicon"

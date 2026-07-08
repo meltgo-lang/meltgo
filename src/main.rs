@@ -1,8 +1,6 @@
 mod mlw_test;
-mod lex_t;
 
 use mlw_test::*;
-use lex_t::*;
 
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::OnceLock;
@@ -10,11 +8,11 @@ use std::sync::OnceLock;
 use regex::Regex;
 
 use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
-use lempet::*;
+use popdack::*;
 use lexer::*;
 use popdack::{Statement, StatementManager};
 use psictre::ast::{ErrorBuf, Function, NodeBuf};
-use suzlun_errors::*;
+use cargry_errors::*;
 
 #[derive(Debug)]
 pub enum MeltgoStatement {
@@ -63,18 +61,6 @@ fn main() {
     //     );
     //     sm.marking();
     //     println!("{:?}", sm);
-
-    let mut funs = lexer_fun();
-    let mut builder = ident(&mut funs);
-    let result = builder.run("abc", &mut funs);
-    result.set_tokens();
-    println!("{:?}", result.get_tokens());
-
-    let mut builder = l();
-    let mut funs = lexer_fun();
-    let result = builder.run("abc", &mut funs);
-    println!("{:?}", result.get_tokens());
-
+    
     g();
-    lt();
 }

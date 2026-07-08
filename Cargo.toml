@@ -11,10 +11,9 @@ members = [
 
 [workspace.dependencies]
 actoa = { path = "crates/actoa" }
-lempet = { path = "crates/lempet" }
 popdack = { path = "crates/popdack" }
 psictre = { path = "crates/psictre" }
-suzlun-errors = { path = "compiler/suzlun-errors" }
+cargry-errors = { path = "compiler/cargry-errors" }
 lexer = { path = "compiler/lexer" }
 randf = { path = "compiler/randf" }
 
@@ -29,10 +28,9 @@ cranelift-object = "0.132.1"
 
 [dependencies]
 actoa = { workspace = true }
-lempet = { workspace = true }
 popdack = { workspace = true }
 psictre = { workspace = true }
-suzlun-errors = { workspace = true }
+cargry-errors = { workspace = true }
 lexer = { workspace = true }
 regex = { workspace = true }
 
