@@ -7,11 +7,13 @@ edition = "2024"
 members = [
     "compiler/*",
     "crates/*",
+    "crates/popdack/lib/*",
 ]
 
 [workspace.dependencies]
 actoa = { path = "crates/actoa" }
 popdack = { path = "crates/popdack" }
+popdack-macro = { path = "crates/popdack/lib/popdack-macro" }
 psictre = { path = "crates/psictre" }
 cargry-errors = { path = "compiler/cargry-errors" }
 lexer = { path = "compiler/lexer" }

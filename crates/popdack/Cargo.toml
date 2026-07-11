@@ -7,3 +7,4 @@ edition = "2024"
 regex = { workspace = true }
 actoa = { workspace = true }
 psictre = { workspace = true }
+popdack-macro = { workspace = true }

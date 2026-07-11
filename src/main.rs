@@ -8,33 +8,30 @@ use std::sync::OnceLock;
 use regex::Regex;
 
 use actoa::mlw::{MLWFunction, MLWGrammarLeaf, MLWTypeVar, PseudoPointer};
-use popdack::*;
-use lexer::*;
-use popdack::{Statement, StatementManager};
-use psictre::ast::{ErrorBuf, Function, NodeBuf};
 use cargry_errors::*;
+use lexer::*;
+use popdack::*;
+use psictre::ast::{ErrorBuf, Function, NodeBuf};
 
-#[derive(Debug)]
-pub enum MeltgoStatement {
-    Package,
-    Import,
-    Let,
-    Func,
-    Comment,
-    None,
-}
-
-impl Statement<MeltgoStatement> for MeltgoStatement {
-    fn mapping(input: &str) -> MeltgoStatement {
-        static FUNC_RE: OnceLock<Regex> = OnceLock::new();
-        let func_regex = FUNC_RE.get_or_init(|| Regex::new(r"(pub\s+)?func").unwrap());
-        match input {
-            s if s.starts_with("package") => Self::Package,
-            s if s.starts_with("import") => Self::Import,
-            s if s.starts_with("let") => Self::Let,
-            s if func_regex.is_match(s) => Self::Func,
-            s if s.starts_with("//") || s.starts_with("/*") => Self::Comment,
-            _ => Self::None,
+#[lexer]
+struct Number;
+impl LexRule for Number {
+    fn lparse(&mut self, input: &mut String) -> LexResult {
+        let mut res = String::new();
+        while let Some(c) = input.chars().next() {
+            if c.is_numeric() {
+                *input = input.chars().skip(1).collect::<String>();
+                res.push(c);
+            } else {
+                break;
+            }
+        }
+        if res.is_empty() {
+            None
+        } else {
+            let tmp = input.chars().skip(res.len()).collect::<String>();
+            println!("{}", res);
+            Some((LexReturn::Some(res), tmp))
         }
     }
 }
@@ -45,7 +42,7 @@ fn main() {
         NonZeroU32::new(1).unwrap(),
         "a",
         "b",
-        "src/main.suz",
+        "src/main.crg",
         NonZeroUsize::new(1).unwrap(),
         NonZeroUsize::new(1).unwrap(),
     );
@@ -61,6 +58,11 @@ fn main() {
     //     );
     //     sm.marking();
     //     println!("{:?}", sm);
-    
+
+    let mut lex = Lexer::new();
+    lex.add_rule(Number);
+    lex.run("123");
+    println!("tokens: {:?}", lex.get_tokens());
+
     g();
 }
