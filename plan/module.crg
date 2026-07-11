@@ -1,0 +1,26 @@
+package plan::point;
+
+export {
+    PointX,
+    PointY,
+}
+
+mut struct PointX<^a> {
+    pub mut<^a> value: f64,
+}
+
+impl<^a> PointX<^a> {
+    pub fun new(v: f64) init {
+        value: v,
+    }
+}
+
+mut struct PointY<^a> {
+    mut<^a> value: f64,
+}
+
+impl<^a> PointY<^a> {
+    pub fun new(v: f64) init {
+        value: v,
+    }
+}
