@@ -13,7 +13,7 @@ use lexer::*;
 use popdack::*;
 use psictre::ast::{ErrorBuf, Function, NodeBuf};
 
-#[lexer]
+#[lexer()]
 struct Number;
 impl LexRule for Number {
     fn lparse(&mut self, input: &mut String) -> LexResult {
@@ -27,11 +27,9 @@ impl LexRule for Number {
             }
         }
         if res.is_empty() {
-            None
+            LexResult::None
         } else {
-            let tmp = input.chars().skip(res.len()).collect::<String>();
-            println!("{}", res);
-            Some((LexReturn::Some(res), tmp))
+            LexResult::Some(res)
         }
     }
 }

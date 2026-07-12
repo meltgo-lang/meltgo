@@ -1,17 +1,19 @@
-pub enum LexReturn {
+pub enum LexResult {
     Some(String),
     Array(Vec<String>),
     None,
 }
 
-pub type LexResult = Option<(LexReturn, String)>;
-
-pub trait LexRule: LexClone {
+pub trait LexRule: LexClone + LexIgnore {
     fn lparse(&mut self, input: &mut String) -> LexResult;
 }
 
 pub trait LexClone {
     fn clone_box(&self) -> Box<dyn LexRule>;
+}
+
+pub trait LexIgnore {
+    fn is_ignore(&self) -> bool;
 }
 
 impl Clone for Box<dyn LexRule> {
@@ -23,7 +25,7 @@ impl Clone for Box<dyn LexRule> {
 pub struct Lexer {
     rules: Vec<Box<dyn LexRule>>,
     tokens: Vec<String>,
-    rule_pos: Vec<(Box<dyn LexRule + 'static>, usize)>,
+    rule_pos: Vec<(Box<dyn LexRule>, usize)>,
 }
 
 impl Lexer {
@@ -39,33 +41,49 @@ impl Lexer {
         self.rules.push(Box::new(rule));
     }
 
-    fn excute(&mut self, input: &mut String) -> LexReturn {
+    fn excute(&mut self, input: &mut String) -> (LexResult, bool) {
         let index = self.tokens.len();
         for rule in self.rules.iter_mut() {
             let lparsed = rule.lparse(input);
             match lparsed {
-                Some((r, _)) => {
-                    self.rule_pos.push((rule.clone(), index));
-                    return r;
+                LexResult::Some(_) => {
+                    if rule.is_ignore() {
+                        return (LexResult::None, true);
+                    } else {
+                        self.rule_pos.push((rule.clone(), index));
+                    }
+                    return (lparsed, rule.is_ignore());
                 }
-                None => (),
+                LexResult::Array(_) => {
+                    if rule.is_ignore() {
+                        return (LexResult::None, true);
+                    } else {
+                        self.rule_pos.push((rule.clone(), index));
+                    }
+                    return (lparsed, rule.is_ignore());
+                }
+                LexResult::None => (),
             }
         }
-        LexReturn::None
+        (LexResult::None, false)
     }
 
     pub fn run(&mut self, input: &str) {
         let mut input = input.to_string();
         while !input.is_empty() {
-            let res = self.excute(&mut input);
+            let (res, is_ignore) = self.excute(&mut input);
             match res {
-                LexReturn::Some(w) => self.tokens.push(w),
-                LexReturn::Array(vec) => {
+                LexResult::Some(w) => self.tokens.push(w),
+                LexResult::Array(vec) => {
                     for item in vec.iter() {
                         self.tokens.push(item.clone());
                     }
                 }
-                LexReturn::None => break,
+                LexResult::None => {
+                    if !is_ignore {
+                        break;
+                    }
+                }
             }
         }
     }

@@ -2,14 +2,28 @@ use std::clone;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, parse_macro_input};
+use syn::{DeriveInput, LitBool, parse_macro_input};
 
 #[proc_macro_attribute]
-pub fn lexer(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn lexer(attr: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     let cloned_input = input.clone();
     let name = cloned_input.ident;
+
+    let mut is_ignore = false;
+
+    let attr_parser = syn::meta::parser(|meta| {
+        if meta.path.is_ident("is_ignore") {
+            let value: LitBool = meta.value()?.parse()?;
+            is_ignore = value.value();
+            Ok(())
+        } else {
+            Err(meta.error("unsupported property"))
+        }
+    });
+
+    parse_macro_input!(attr with attr_parser);
 
     let lex_clone_impl = quote! {
         #[derive(Clone)]
@@ -18,6 +32,12 @@ pub fn lexer(_attr: TokenStream, input: TokenStream) -> TokenStream {
         impl LexClone for #name {
             fn clone_box(&self) -> std::boxed::Box<dyn LexRule> {
                 std::boxed::Box::new(std::clone::Clone::clone(self))
+            }
+        }
+
+        impl LexIgnore for #name {
+            fn is_ignore(&self) -> bool {
+                #is_ignore
             }
         }
     };
