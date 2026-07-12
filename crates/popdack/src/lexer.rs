@@ -37,7 +37,7 @@ impl Lexer {
         }
     }
 
-    pub fn add_rule(&mut self, rule: impl LexRule + Clone + 'static) {
+    pub fn add_rule(&mut self, rule: impl LexRule + Clone + LexClone + LexIgnore + 'static) {
         self.rules.push(Box::new(rule));
     }
 
