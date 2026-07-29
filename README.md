@@ -1,1 +1,1 @@
-**"Anyone do not do, then I do!"**
+**"Write immutable, write mutable!"**
