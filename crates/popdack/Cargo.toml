@@ -8,3 +8,4 @@ regex = { workspace = true }
 actoa = { workspace = true }
 psictre = { workspace = true }
 popdack-macro = { workspace = true }
+lexer-utils = { workspace = true }

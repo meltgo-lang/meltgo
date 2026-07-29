@@ -1,4 +1,5 @@
-use std::clone;
+use std::boxed::Box;
+use std::clone::Clone;
 
 use proc_macro::TokenStream;
 use quote::quote;
@@ -30,8 +31,8 @@ pub fn lexer(attr: TokenStream, input: TokenStream) -> TokenStream {
         #input
 
         impl LexClone for #name {
-            fn clone_box(&self) -> std::boxed::Box<dyn LexRule> {
-                std::boxed::Box::new(std::clone::Clone::clone(self))
+            fn clone_box(&self) -> Box<dyn LexRule> {
+                Box::new(Clone::clone(self))
             }
         }
 

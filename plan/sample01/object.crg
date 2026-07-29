@@ -1,0 +1,24 @@
+use std::fmt;
+
+pub struct Object {
+    value: i32,
+}
+
+impl Object {
+    pub fun from(value: i32) init {
+        value,
+    }
+
+    @fbip_hard
+    pub fun add(mut self, i: i32) -> Self {
+        Self::from(self.value + i)
+    }
+}
+
+impl fmt::Display for Object {
+    @fbip_hard
+    @inline
+    pub fun fmt(self, mut f: fmt::Formatter) -> fmt::Formatter {
+        fmt::write(f, "{{ {} }}", self.value)
+    }
+}

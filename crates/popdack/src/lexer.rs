@@ -8,6 +8,11 @@ pub trait LexRule: LexClone + LexIgnore {
     fn lparse(&mut self, input: &mut String) -> LexResult;
 }
 
+pub trait LexerManager {
+    fn new() -> Self;
+    fn run(&mut self, input: &str);
+}
+
 pub trait LexClone {
     fn clone_box(&self) -> Box<dyn LexRule>;
 }

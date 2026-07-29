@@ -1,0 +1,13 @@
+use std::fmt;
+use std::vector::{Vec, vec};
+
+fun main() {
+    let input = fmt::readln().parse<u32>().unwrap_or(0);
+    fold let v = vec() for i in 1..=input {
+        v.push(i)
+    }
+    fold let result = 0 for item in v.iter() {
+        result + item
+    }
+    fmt::println("{}", result)    // result = input * (input + 1) / 2
+}
