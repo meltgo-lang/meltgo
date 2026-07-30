@@ -35,13 +35,15 @@ fn main() {
     //     println!("{:?}", sm);
 
     let mut lex = Lexer::new();
+    lex.add_rule(EndLine);
+    lex.add_rule(Use);
     lex.add_rule(Let);
     lex.add_rule(Number);
     lex.add_rule(Ident);
-    lex.run("let a = 123");
+    lex.run("use mod  :: a::b;use std::fmt;");
     println!("tokens: {:?}", lex.get_tokens());
 
-    let f = lfmany1(predicate(|ch| *ch == 'a', lign()));
+    let f = lfmany1(lpredicate(|ch| *ch == 'a', lign()));
 
     match f("aaaa") {
         Ok(vec) => println!("{:?}", vec),

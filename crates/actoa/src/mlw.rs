@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::hash::Hash;
-use std::sync::{Arc, Mutex};
 use std::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 pub struct PseudoPointer<T>
 where
@@ -168,7 +168,10 @@ where
     F: Fn(T) -> T,
 {
     pub fn new(f: F) -> Self {
-        Self { f: f, _marker: PhantomData.clone(), }
+        Self {
+            f: f,
+            _marker: PhantomData.clone(),
+        }
     }
 
     pub fn execute_function(&self, arg: T) -> T {

@@ -1,5 +1,12 @@
+/*
+ * Copyright (c) 2026 Cargry Language
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 mod lexer;
-mod statement_manager;
 mod str_ext;
 
 pub mod lex {
@@ -10,8 +17,4 @@ pub mod lex {
 
 pub mod utils {
     pub use lexer_utils::*;
-}
-
-pub mod statement {
-    pub use crate::statement_manager::*;
 }

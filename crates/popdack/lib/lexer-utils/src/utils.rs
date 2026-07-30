@@ -1,17 +1,25 @@
+/*
+ * Copyright (c) 2026 Cargry Language
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+
 fn skip(s: &String, i: usize) -> String {
     s.chars().skip(i).collect::<String>()
 }
 
-pub fn lign<'a>() -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a {
+pub fn lign<'a>() -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a {
     |input: &str| Ok((input.to_string(), vec![]))
 }
 
 pub fn lstring<'a, F>(
     s: &'a str,
     f: F,
-) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    F: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    F: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         if input.starts_with(s) {
@@ -37,9 +45,9 @@ where
 pub fn lmany0<'a, F>(
     s: &'a str,
     f: F,
-) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    F: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    F: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         let mut rvec = vec![String::new()];
@@ -65,9 +73,9 @@ where
     }
 }
 
-pub fn lfmany0<'a, F>(f: F) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+pub fn lfmany0<'a, F>(f: F) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    F: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    F: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         let mut rvec = vec![];
@@ -85,9 +93,9 @@ where
 pub fn lmany1<'a, F>(
     s: &'a str,
     f: F,
-) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    F: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    F: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         let mut rvec = vec![String::new()];
@@ -113,9 +121,9 @@ where
     }
 }
 
-pub fn lfmany1<'a, F>(f: F) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+pub fn lfmany1<'a, F>(f: F) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    F: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    F: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         let mut rvec = vec![];
@@ -147,10 +155,10 @@ where
 pub fn lor<'a, F1, F2>(
     f1: F1,
     f2: F2,
-) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    F1: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
-    F2: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    F1: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
+    F2: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         let res = f1(input);
@@ -167,13 +175,41 @@ where
     }
 }
 
-pub fn predicate<'a, P, F>(
+pub fn land<'a, F1, F2>(
+    f1: F1,
+    f2: F2,
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
+where
+    F1: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
+    F2: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
+{
+    move |input: &str| {
+        let res = f1(input);
+        match res {
+            Ok((rest, mut vec)) => {
+                let res2 = f2(rest.as_str());
+                match res2 {
+                    Ok((rest, vec2)) => {
+                        for item in vec2.iter() {
+                            vec.push(item.clone());
+                        }
+                        Ok((rest, vec))
+                    }
+                    res => res,
+                }
+            }
+            res => res,
+        }
+    }
+}
+
+pub fn lpredicate<'a, P, F>(
     p: P,
     f: F,
-) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + 'a
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
 where
-    P: Fn(&char) -> bool + 'a,
-    F: Fn(&str) -> Result<(String, Vec<String>), String> + 'a,
+    P: Fn(&char) -> bool + Clone + 'a,
+    F: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
 {
     move |input: &str| {
         let mut input = input.to_string();
@@ -199,5 +235,33 @@ where
             }
             res => res,
         }
+    }
+}
+
+pub fn lreduce<'a, F1, F2>(
+    p: F1,
+    f: F2,
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
+where
+    F1: Fn(String, &String) -> String + Clone + 'a,
+    F2: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
+{
+    move |input: &str| match f(input) {
+        Ok((rest, vec)) => Ok((rest, vec![vec.iter().fold(String::new(), p.clone())])),
+        res => res,
+    }
+}
+
+pub fn lconv<'a, F1, F2>(
+    c: F1,
+    f: F2,
+) -> impl Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a
+where
+    F1: Fn(&Vec<String>) -> Vec<String> + Clone + 'a,
+    F2: Fn(&str) -> Result<(String, Vec<String>), String> + Clone + 'a,
+{
+    move |input: &str| match f(input) {
+        Ok((rest, vec)) => Ok((rest, c(&vec))),
+        res => res,
     }
 }
