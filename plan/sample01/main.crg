@@ -1,14 +1,14 @@
 use std::fmt;
 
-use mod::object::*;
+use mod(object)::*;
 
 fun main() {
     let mut a = Object::from(1);
-    let b = a.add(2);
+    let b = (&a).add(2);
     let i = 3;
-    let c = a.add!(i);
+    let c = (&a).add!(i);
     // error: let d = a.add(4);
 
     fmt::println("i = {}", i);
-    fmt::println("b = {}, c = {}", b, c)
+    fmt::println("b = {}, c = {}", &b, &c)
 }

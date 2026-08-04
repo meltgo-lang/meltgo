@@ -16,5 +16,5 @@ pub mod lex {
 }
 
 pub mod utils {
-    pub use lexer_utils::*;
+    pub use popdack_utils::*;
 }

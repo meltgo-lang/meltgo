@@ -46,15 +46,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "lexer"
+name = "lewekk"
 version = "0.1.0"
 dependencies = [
  "popdack",
 ]
 
 [[package]]
-name = "lexer-utils"
+name = "lexer"
 version = "0.1.0"
+dependencies = [
+ "popdack",
+]
 
 [[package]]
 name = "memchr"
@@ -76,8 +79,8 @@ name = "popdack"
 version = "0.1.0"
 dependencies = [
  "actoa",
- "lexer-utils",
  "popdack-macro",
+ "popdack-utils",
  "psictre",
  "regex",
 ]
@@ -89,6 +92,10 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "popdack-utils"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"
@@ -115,10 +122,6 @@ checksum = "dfbc457d0c7a0759a614551b11a6409e5951f6c7537be1f1b7682b9ae9230368"
 dependencies = [
  "proc-macro2",
 ]
-
-[[package]]
-name = "randf"
-version = "0.1.0"
 
 [[package]]
 name = "regex"

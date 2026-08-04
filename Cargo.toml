@@ -7,18 +7,16 @@ edition = "2024"
 members = [
     "compiler/*",
     "crates/*",
-    "crates/popdack/lib/*",
 ]
 
 [workspace.dependencies]
 actoa = { path = "crates/actoa" }
 popdack = { path = "crates/popdack" }
-popdack-macro = { path = "crates/popdack/lib/popdack-macro" }
-lexer-utils = { path = "crates/popdack/lib/lexer-utils" }
-psictre = { path = "crates/psictre" }
+popdack-macro = { path = "crates/popdack-macro" }
+popdack-utils = { path = "crates/popdack-utils" }
+lewekk = { path = "crates/lewekk" }
 cargry-errors = { path = "compiler/cargry-errors" }
 lexer = { path = "compiler/lexer" }
-randf = { path = "compiler/randf" }
 
 colored = "3.1.1"
 regex = "1.12.4"
