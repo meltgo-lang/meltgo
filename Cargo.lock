@@ -45,13 +45,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "lewekk"
-version = "0.1.0"
-dependencies = [
- "popdack",
-]
-
-[[package]]
 name = "lexer"
 version = "0.1.0"
 dependencies = [
@@ -90,6 +83,10 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "popdack-parser"
+version = "0.1.0"
 
 [[package]]
 name = "popdack-utils"
