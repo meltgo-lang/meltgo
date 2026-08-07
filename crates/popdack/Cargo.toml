@@ -6,6 +6,5 @@ edition = "2024"
 [dependencies]
 regex = { workspace = true }
 actoa = { workspace = true }
-psictre = { workspace = true }
 popdack-macro = { workspace = true }
 popdack-utils = { workspace = true }

@@ -1,28 +1,7 @@
-use popdack::lex::*;
-
-#[derive(Clone)]
-pub enum Direction {
-    RIght,
-    Left,
-    RightLeft,
-}
-
-#[derive(Clone)]
-pub struct ParsePrefix {
-    pub prefix: i32,
-    pub direction: Direction,
-}
-
-pub trait ContextDicide {
-    fn decide_context(&self, lexer: &Lexer) -> ParsePrefix;
-}
-
-pub struct Parser {
-    lexer: Lexer,
-}
-
-impl Parser {
-    pub fn new(lexer: Lexer) -> Self {
-        lexer,
-    }
-}
+/*
+ * Copyright (c) 2026 Cargry Language
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */

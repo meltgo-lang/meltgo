@@ -18,6 +18,7 @@ pub fn lexer(attr: TokenStream, input: TokenStream) -> TokenStream {
 
     let cloned_input = input.clone();
     let name = cloned_input.ident;
+    let name_str = name.to_string();
 
     let mut is_ignore = false;
 
@@ -46,6 +47,12 @@ pub fn lexer(attr: TokenStream, input: TokenStream) -> TokenStream {
         impl LexIgnore for #name {
             fn is_ignore(&self) -> bool {
                 #is_ignore
+            }
+        }
+
+        impl LexDisplay for #name {
+            fn get_name(&self) -> &'static str {
+                #name_str
             }
         }
     };

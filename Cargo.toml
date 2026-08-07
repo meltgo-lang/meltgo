@@ -30,7 +30,6 @@ cranelift-object = "0.132.1"
 [dependencies]
 actoa = { workspace = true }
 popdack = { workspace = true }
-psictre = { workspace = true }
 cargry-errors = { workspace = true }
 lexer = { workspace = true }
 regex = { workspace = true }
