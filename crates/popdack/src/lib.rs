@@ -6,15 +6,14 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-mod lexer;
-mod str_ext;
-
-pub mod lex {
-    pub use crate::lexer::*;
-    pub use crate::str_ext::*;
-    pub use popdack_macro::*;
-}
+mod parser_lib;
+mod parser_utils;
 
 pub mod utils {
-    pub use popdack_utils::*;
+    pub use crate::parser_utils::*;
+}
+
+pub mod parser {
+    pub use crate::parser_lib::*;
+    pub use popdack_macro::mappinger;
 }

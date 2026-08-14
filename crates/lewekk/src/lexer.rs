@@ -21,6 +21,8 @@ pub trait LexRule: LexClone + LexIgnore + LexDisplay {
 pub trait LexerManager {
     fn new() -> Self;
     fn run(&mut self, input: &str);
+    fn get_tokens(&self) -> &Vec<String>;
+    fn get_rules(&self) -> &Vec<(Box<dyn LexRule>, usize)>;
 }
 
 pub trait LexClone {
@@ -52,20 +54,22 @@ impl Debug for Box<dyn LexRule> {
 
 pub struct Lexer {
     rules: Vec<Box<dyn LexRule>>,
+    ign_rule: Box<dyn LexRule>,
     tokens: Vec<String>,
     rule_pos: Vec<(Box<dyn LexRule>, usize)>,
 }
 
 impl Lexer {
-    pub fn new() -> Self {
+    pub fn new(rule: impl LexRule + Clone + 'static) -> Self {
         Self {
             rules: vec![],
+            ign_rule: Box::new(rule),
             tokens: vec![],
             rule_pos: vec![],
         }
     }
 
-    pub fn add_rule(&mut self, rule: impl LexRule + Clone + LexClone + LexIgnore + 'static) {
+    pub fn add_rule(&mut self, rule: impl LexRule + Clone + 'static) {
         self.rules.push(Box::new(rule));
     }
 
@@ -98,6 +102,7 @@ impl Lexer {
 
     pub fn run(&mut self, input: &str) {
         let mut input = input.to_string();
+        self.ign_rule.lparse(&mut input);
         while !input.is_empty() {
             let (res, is_ignore) = self.excute(&mut input);
             match res {
@@ -113,14 +118,12 @@ impl Lexer {
                     }
                 }
             }
+            self.ign_rule.lparse(&mut input);
         }
     }
 
-    pub fn get_tokens(&self) -> Vec<&str> {
-        self.tokens
-            .iter()
-            .map(|s| s.as_str())
-            .collect::<Vec<&str>>()
+    pub fn get_tokens(&self) -> &Vec<String> {
+        &self.tokens
     }
 
     pub fn get_rules(&self) -> &Vec<(Box<dyn LexRule>, usize)> {

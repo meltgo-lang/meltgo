@@ -1,5 +1,3 @@
-**"Write immutable, write mutable!"**
-
 # License
 
 Copyright (c) 2026 Cargry Language

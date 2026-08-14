@@ -1,61 +1,46 @@
-/*
- * Copyright (c) 2026 Cargry Language
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-
-use std::clone::Clone;
-
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, LitBool, parse_macro_input};
+use syn::punctuated::Punctuated;
+use syn::spanned::Spanned;
+use syn::{DeriveInput, Token, Type, parse_macro_input};
 
 #[proc_macro_attribute]
-pub fn lexer(attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn mappinger(attr: TokenStream, input: TokenStream) -> TokenStream {
+    let types = parse_macro_input!(attr with Punctuated::<Type, Token![,]>::parse_terminated);
+
+    for ty in &types {
+        if let Type::Reference(type_ref) = ty {
+            return syn::Error::new(type_ref.span(), "can not use reference type.")
+                .to_compile_error()
+                .into();
+        }
+    }
+
     let input = parse_macro_input!(input as DeriveInput);
 
-    let cloned_input = input.clone();
-    let name = cloned_input.ident;
-    let name_str = name.to_string();
-
-    let mut is_ignore = false;
-
-    let attr_parser = syn::meta::parser(|meta| {
-        if meta.path.is_ident("is_ignore") {
-            let value: LitBool = meta.value()?.parse()?;
-            is_ignore = value.value();
-            Ok(())
-        } else {
-            Err(meta.error("unsupported property"))
-        }
+    let name = &input.ident;
+    let vis = &input.vis;
+    let types_v = types.iter().map(|ty| quote! {#ty,});
+    let types_i = types.iter().map(|ty| {
+        let ty_str = quote!(#ty).to_string();
+        quote! {#ty_str => #name::#ty,}
     });
 
-    parse_macro_input!(attr with attr_parser);
-
-    let lex_clone_impl = quote! {
-        #[derive(Clone)]
-        #input
-
-        impl LexClone for #name {
-            fn clone_box(&self) -> Box<dyn LexRule> {
-                Box::new(Clone::clone(self))
-            }
+    let expanded = quote! {
+        #[derive(Clone, Debug, Eq, PartialEq)]
+        #vis enum #name {
+            #(#types_v)*
         }
 
-        impl LexIgnore for #name {
-            fn is_ignore(&self) -> bool {
-                #is_ignore
-            }
-        }
-
-        impl LexDisplay for #name {
-            fn get_name(&self) -> &'static str {
-                #name_str
+        impl ParserVariant<#name> for #name {
+            fn variant(input: &Box<dyn LexRule>) -> #name {
+                match input.get_name() {
+                    #(#types_i)*
+                    s => panic!("invalid token kind, {}.", s),
+                }
             }
         }
     };
 
-    TokenStream::from(lex_clone_impl)
+    TokenStream::from(expanded)
 }

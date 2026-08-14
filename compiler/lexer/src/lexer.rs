@@ -6,7 +6,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use popdack::lex::*;
+use lewekk::lex::*;
 
 use crate::lexer_node::*;
 
@@ -16,15 +16,26 @@ pub struct CargryLexer {
 
 impl LexerManager for CargryLexer {
     fn new() -> Self {
-        let mut lex = Lexer::new();
-        lex.add_rule(EndLine);
+        let mut lex = Lexer::new(EndLine);
+        lex.add_rule(Scope);
+        lex.add_rule(Paren);
         lex.add_rule(Use);
+        lex.add_rule(Mod);
         lex.add_rule(Let);
         lex.add_rule(Number);
         lex.add_rule(Ident);
         Self { lexer: lex }
     }
+
     fn run(&mut self, input: &str) {
         self.lexer.run(input);
+    }
+
+    fn get_tokens(&self) -> &Vec<String> {
+        self.lexer.get_tokens()
+    }
+
+    fn get_rules(&self) -> &Vec<(Box<dyn LexRule>, usize)> {
+        self.lexer.get_rules()
     }
 }

@@ -11,10 +11,11 @@ members = [
 
 [workspace.dependencies]
 actoa = { path = "crates/actoa" }
+lewekk = { path = "crates/lewekk" }
+lewekk-macro = { path = "crates/lewekk-macro" }
+lewekk-utils = { path = "crates/lewekk-utils" }
 popdack = { path = "crates/popdack" }
 popdack-macro = { path = "crates/popdack-macro" }
-popdack-utils = { path = "crates/popdack-utils" }
-lewekk = { path = "crates/lewekk" }
 cargry-errors = { path = "compiler/cargry-errors" }
 lexer = { path = "compiler/lexer" }
 
@@ -30,6 +31,7 @@ cranelift-object = "0.132.1"
 [dependencies]
 actoa = { workspace = true }
 popdack = { workspace = true }
+lewekk = { workspace = true }
 cargry-errors = { workspace = true }
 lexer = { workspace = true }
 regex = { workspace = true }

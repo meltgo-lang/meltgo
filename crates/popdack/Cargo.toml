@@ -4,7 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-regex = { workspace = true }
-actoa = { workspace = true }
+lewekk = { workspace = true }
 popdack-macro = { workspace = true }
-popdack-utils = { workspace = true }

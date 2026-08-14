@@ -6,13 +6,13 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-pub fn skip(s: &String, i: usize) -> String {
-    s.chars().skip(i).collect::<String>()
+mod lexer;
+
+pub mod lex {
+    pub use crate::lexer::*;
+    pub use lewekk_macro::*;
 }
 
-pub fn skip_while<F>(s: &String, f: F) -> String
-where
-    F: FnMut(&char) -> bool,
-{
-    s.chars().skip_while(f).collect::<String>()
+pub mod utils {
+    pub use lewekk_utils::*;
 }
